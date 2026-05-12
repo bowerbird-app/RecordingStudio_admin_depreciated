@@ -32,5 +32,20 @@ module RecordingStudioAdmin
     def admin_root_recording?(recording)
       recording&.recordable.is_a?(RecordingStudioAdmin::Admin)
     end
+
+    def authorized_for_role?(actor:, root_recording:, role:)
+      return false if actor.blank?
+      return false if root_recording.blank?
+      return false unless admin_root_recording?(root_recording)
+      return false unless defined?(RecordingStudioAccessible)
+
+      RecordingStudioAccessible.authorized?(actor: actor, recording: root_recording, role: role)
+    end
+
+    def effective_role_for(actor:, root_recording:)
+      %i[admin edit view].find do |role|
+        authorized_for_role?(actor: actor, root_recording: root_recording, role: role)
+      end
+    end
   end
 end

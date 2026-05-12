@@ -10,12 +10,20 @@
   <% sidebar.items do %>
     <nav class="space-y-1 py-4" aria-label="Recording Studio Admin navigation">
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Overview",
-        href: main_app.recording_studio_admin.root_path(scope: recording_studio_admin_current_scope),
+        label: "Home",
+        href: recording_studio_admin_home_path,
         icon: :home
       ) %>
 
-      <% if recording_studio_admin_admin_users_path.present? %>
+      <% if recording_studio_admin_pages_allowed? %>
+        <%= render FlatPack::Sidebar::Item::Component.new(
+          label: "Pages",
+          href: recording_studio_admin_pages_path,
+          icon: :document_text
+        ) %>
+      <% end %>
+
+      <% if recording_studio_admin_admin_users_path.present? && recording_studio_admin_admin_users_allowed? %>
         <%= render FlatPack::Sidebar::Item::Component.new(
           label: "Admin users",
           href: recording_studio_admin_admin_users_path,

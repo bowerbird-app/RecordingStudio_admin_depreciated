@@ -12,6 +12,11 @@
       style: RecordingStudioAdmin.admin_root_recording?(@root_recording) ? :info : :warning,
       size: :sm
     ) %>
+    <%= render FlatPack::Badge::Component.new(
+      text: "#{@current_role || :none} access",
+      style: @current_role == :admin ? :success : (@current_role == :edit ? :warning : :default),
+      size: :sm
+    ) %>
   </div>
 
   <div class="grid gap-6 lg:grid-cols-2">
@@ -27,16 +32,19 @@
 
       <% card.body do %>
         <dl class="grid gap-3 text-sm leading-6 sm:grid-cols-[8rem_1fr]">
-          <dt class="font-medium text-[var(--surface-muted-content-color)]">Name</dt>
+          <dt class="font-medium text-(--surface-muted-content-color)">Name</dt>
           <dd><%= recording_studio_admin_current_root_name %></dd>
 
-          <dt class="font-medium text-[var(--surface-muted-content-color)]">Type</dt>
+          <dt class="font-medium text-(--surface-muted-content-color)">Type</dt>
           <dd><%= @root_recordable&.class&.name || "Unavailable" %></dd>
 
           <% if @root_recordable.respond_to?(:key) && @root_recordable.key.present? %>
-            <dt class="font-medium text-[var(--surface-muted-content-color)]">Key</dt>
+            <dt class="font-medium text-(--surface-muted-content-color)">Key</dt>
             <dd><%= @root_recordable.key %></dd>
           <% end %>
+
+          <dt class="font-medium text-(--surface-muted-content-color)">Access</dt>
+          <dd><%= @current_role || "Unavailable" %></dd>
         </dl>
       <% end %>
     <% end %>
@@ -52,19 +60,29 @@
       <% end %>
 
       <% card.body do %>
-        <p class="text-sm leading-6 text-[var(--surface-muted-content-color)]">
-          Recording Studio Admin intentionally keeps the addon surface small: one admin root type, one mounted page,
-          and one handoff to the existing access-management UI.
+        <p class="text-sm leading-6 text-(--surface-muted-content-color)">
+          Recording Studio Admin keeps the addon surface narrow but root-scoped. Standard workspace roots stay outside
+          this mounted admin surface, while admin-root pages can still enforce stricter access inside the admin root.
         </p>
       <% end %>
 
       <% card.footer do %>
         <div class="flex flex-wrap gap-3">
-          <% if recording_studio_admin_admin_users_path.present? %>
+          <% if recording_studio_admin_pages_allowed? %>
+            <%= link_to recording_studio_admin_pages_path, class: "inline-flex" do %>
+              <%= render FlatPack::Button::Component.new(
+                text: "Pages",
+                style: :primary,
+                size: :md
+              ) %>
+            <% end %>
+          <% end %>
+
+          <% if recording_studio_admin_admin_users_path.present? && recording_studio_admin_admin_users_allowed? %>
             <%= link_to recording_studio_admin_admin_users_path, class: "inline-flex" do %>
               <%= render FlatPack::Button::Component.new(
                 text: "Admin users",
-                style: :primary,
+                style: :secondary,
                 size: :md
               ) %>
             <% end %>

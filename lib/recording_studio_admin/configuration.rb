@@ -47,8 +47,11 @@ module RecordingStudioAdmin
     end
 
     def default_current_root_recording_for(controller:, actor:)
-      return controller.current_root_recording if controller.respond_to?(:current_root_recording, true) &&
-        controller.current_root_recording.present?
+      current_root = if controller.respond_to?(:current_root_recording, true)
+        controller.current_root_recording
+      end
+
+      return current_root if current_root.present? && RecordingStudioAdmin.admin_root_recording?(current_root)
 
       return if actor.blank? || !defined?(RecordingStudioAccessible)
 
@@ -62,15 +65,11 @@ module RecordingStudioAdmin
       accessible_roots = RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
       accessible_roots.find do |recording|
         RecordingStudioAdmin.admin_root_recording?(recording)
-      end || accessible_roots.first
+      end || current_root || accessible_roots.first
     end
 
     def default_allow_mounted_page?(actor:, root_recording:, **)
-      return false if actor.blank?
-      return false if root_recording.blank?
-      return false unless defined?(RecordingStudioAccessible)
-
-      RecordingStudioAccessible.authorized?(actor: actor, recording: root_recording, role: :admin)
+      RecordingStudioAdmin.authorized_for_role?(actor: actor, root_recording: root_recording, role: :view)
     end
   end
 end
