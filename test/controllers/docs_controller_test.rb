@@ -118,15 +118,16 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "/recording_studio_accessible/recordings/#{@admin_root_recording.id}/accesses"
   end
 
-  test "pages route renders for admin users on the admin root" do
+  test "dummy-owned pages route renders for admin users on the admin root" do
     get "/admin/pages"
 
     assert_response :success
     assert_includes response.body, "Admin-root pages can require stronger access"
     assert_includes response.body, "edit or higher"
+    assert_includes response.body, "Visible only to admins who can manage root-level access."
   end
 
-  test "pages route renders for admin-root viewers and hides stronger cards" do
+  test "dummy-owned pages route renders for admin-root viewers and hides admin-only actions" do
     sign_in @viewer
 
     get "/admin/pages"
@@ -168,6 +169,15 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "/admin/pages?scope=all_roots"
     assert_includes response.body, "return_to=%2Fadmin%2F%3Fscope%3Dall_roots"
     assert_includes response.body, "scope=all_roots"
+  end
+
+  test "engine routes only expose the mounted index" do
+    engine_routes = RecordingStudioAdmin::Engine.routes.routes.filter_map do |route|
+      route.path.spec.to_s if route.verb&.match?("GET")
+    end
+
+    assert_includes engine_routes, "/"
+    refute_includes engine_routes, "/pages(.:format)"
   end
 
   test "dummy app exposes both admin and workspace roots to accessible queries" do

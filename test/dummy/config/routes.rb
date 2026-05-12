@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
   devise_for :users
 
+  get "/admin/pages", to: "admin_pages#index", as: :admin_pages
+
   mount RecordingStudio::Engine, at: "/recording_studio"
   mount RecordingStudioAccessible::Engine, at: "/recording_studio_accessible"
   mount RecordingStudioRootSwitchable::Engine, at: "/recording_studio_root_switchable"

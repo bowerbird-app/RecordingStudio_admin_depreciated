@@ -96,10 +96,14 @@ module RecordingStudioAdmin
     end
 
     def recording_studio_admin_pages_path
-      recording_studio_admin.pages_path(scope: recording_studio_admin_current_scope)
+      main_app.admin_pages_path(scope: recording_studio_admin_current_scope)
+    rescue StandardError
+      nil
     end
 
     def recording_studio_admin_pages_allowed?
+      return false if recording_studio_admin_pages_path.blank?
+
       RecordingStudioAdmin.authorized_for_role?(
         actor: recording_studio_admin_current_actor,
         root_recording: recording_studio_admin_current_root_recording,
