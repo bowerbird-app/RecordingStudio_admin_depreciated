@@ -1,0 +1,58 @@
+<div class="mx-auto flex w-full max-w-4xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Access management is unavailable",
+    subtitle: "This account can view the root, but it cannot manage user access for it.",
+    variant: :h1
+  ) %>
+
+  <div class="flex flex-wrap gap-2">
+    <%= render FlatPack::Badge::Component.new(text: "403 forbidden", style: :warning, size: :sm) %>
+    <%= render FlatPack::Badge::Component.new(text: @recording.recordable.name, style: :info, size: :sm) %>
+    <%= render FlatPack::Badge::Component.new(text: current_user.email, style: :warning, size: :sm) %>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(
+          title: "Why this is blocked",
+          subtitle: "User-management routes are limited to admins for the active root.",
+          variant: :h3,
+          class: "mb-0 pb-0"
+        ) %>
+      <% end %>
+
+      <% card.body do %>
+        <p class="text-sm leading-6 text-(--surface-muted-content-color)">
+          You need admin access on this root to manage users.
+        </p>
+      <% end %>
+    <% end %>
+
+    <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(
+          title: "Next step",
+          subtitle: "Switch to a root where this account is an admin, or return to the dummy home page.",
+          variant: :h3,
+          class: "mb-0 pb-0"
+        ) %>
+      <% end %>
+
+      <% card.footer do %>
+        <div class="flex flex-wrap gap-3">
+          <%= link_to main_app.root_path, class: "inline-flex" do %>
+            <%= render FlatPack::Button::Component.new(text: "Back home", style: :primary, size: :md) %>
+          <% end %>
+
+          <%= link_to recording_studio_root_switchable.root_switch_path(
+            scope: "all_roots",
+            return_to: request.fullpath
+          ), class: "inline-flex" do %>
+            <%= render FlatPack::Button::Component.new(text: "Switch root", style: :secondary, size: :md) %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>

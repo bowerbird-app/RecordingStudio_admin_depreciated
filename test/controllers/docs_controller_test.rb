@@ -139,6 +139,17 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Visible only to admins who can manage root-level access."
   end
 
+  test "accessible access management renders a visible 403 page for unauthorized users" do
+    sign_in @viewer
+
+    get "/recording_studio_accessible/recordings/#{@admin_root_recording.id}/accesses"
+
+    assert_response :forbidden
+    assert_includes response.body, "Access management is unavailable"
+    assert_includes response.body, "You need admin access on this root to manage users."
+    assert_includes response.body, "viewer@example.com"
+  end
+
   test "dummy home page shows current root name and root switcher link" do
     get root_path
 
