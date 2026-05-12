@@ -3,6 +3,7 @@
 require "recording_studio"
 
 require "recording_studio_admin/version"
+require "recording_studio_admin/labels_compatibility"
 require "recording_studio_admin/engine"
 require "recording_studio_admin/configuration"
 

@@ -24,6 +24,23 @@ class EngineTest < Minitest::Test
     end
   end
 
+  def test_labels_compatibility_defines_title_for_when_missing
+    recording_studio = Module.new
+
+    with_temporary_constant(:RecordingStudio, recording_studio) do
+      load File.expand_path("../lib/recording_studio_admin/labels_compatibility.rb", __dir__)
+
+      named_recordable_class = Class.new do
+        def self.name
+          "ExampleNamespace::WorkspaceRecordable"
+        end
+      end
+
+      assert_equal "Admin", RecordingStudio::Labels.title_for(Struct.new(:name).new("Admin"))
+      assert_equal "Workspace Recordable", RecordingStudio::Labels.title_for(named_recordable_class.new)
+    end
+  end
+
   private
 
   def find_initializer(name)
