@@ -1,7 +1,64 @@
-<div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
-    title: "Demo",
-    subtitle: "Provide a simple demo below",
+    title: "Recording Studio Admin",
+    subtitle: "Dummy app showing one admin root, one standard root, and the shared root switch flow.",
     variant: :h1
   ) %>
+
+  <div class="flex flex-wrap gap-2">
+    <%= render FlatPack::Badge::Component.new(text: current_root_name, style: :info, size: :sm) %>
+    <%= render FlatPack::Badge::Component.new(
+      text: current_root_recordable&.class&.name || "No root",
+      style: :warning,
+      size: :sm
+    ) %>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(
+          title: "Current root",
+          subtitle: "This page uses the standard dummy layout instead of the mounted admin layout.",
+          variant: :h3,
+          class: "mb-0 pb-0"
+        ) %>
+      <% end %>
+
+      <% card.body do %>
+        <dl class="grid gap-3 text-sm leading-6 sm:grid-cols-[8rem_1fr]">
+          <dt class="font-medium text-[var(--surface-muted-content-color)]">Name</dt>
+          <dd><%= current_root_name %></dd>
+
+          <dt class="font-medium text-[var(--surface-muted-content-color)]">Type</dt>
+          <dd><%= current_root_recordable&.class&.name || "Unavailable" %></dd>
+        </dl>
+      <% end %>
+    <% end %>
+
+    <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(
+          title: "Actions",
+          subtitle: "Jump into the mounted admin page or the standard access-management screen for the current root.",
+          variant: :h3,
+          class: "mb-0 pb-0"
+        ) %>
+      <% end %>
+
+      <% card.footer do %>
+        <div class="flex flex-wrap gap-3">
+          <%= link_to recording_studio_admin.root_path(scope: "all_roots"), class: "inline-flex" do %>
+            <%= render FlatPack::Button::Component.new(text: "Open admin", style: :primary, size: :md) %>
+          <% end %>
+
+          <% if current_root_recording.present? %>
+            <%= link_to recording_studio_accessible.recording_accesses_path(current_root_recording), class: "inline-flex" do %>
+              <%= render FlatPack::Button::Component.new(text: "Manage users", style: :secondary, size: :md) %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
 </div>

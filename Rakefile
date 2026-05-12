@@ -7,6 +7,7 @@ DUMMY_TEST_FILE = File.expand_path("test/controllers/docs_controller_test.rb", _
 DUMMY_GEMFILE = File.expand_path("test/dummy/Gemfile", __dir__)
 DUMMY_APP_ROOT = File.expand_path("test/dummy", __dir__)
 ROOT_TEST_EXCLUSIONS = %w[test/controllers/docs_controller_test.rb test/rename_verification_test.rb].freeze
+ROOT_TEST_PATH = File.expand_path("test", __dir__)
 
 def run_command!(env, *command)
   return if system(env, *command)
@@ -64,7 +65,7 @@ namespace :test do
       env = dummy_bundle_env
 
       run_command!(env, "bin/rails", "db:prepare")
-      run_command!(env, "bundle", "exec", "ruby", "-I/workspace/test", DUMMY_TEST_FILE)
+      run_command!(env, "bundle", "exec", "ruby", "-I#{ROOT_TEST_PATH}", DUMMY_TEST_FILE)
     end
   end
 
@@ -74,7 +75,7 @@ end
 
 namespace :app do
   desc "Run all tests for the gem"
-  task test: :test
+  task test: "test:all"
 end
 
 task default: :test

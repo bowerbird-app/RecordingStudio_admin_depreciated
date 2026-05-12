@@ -1,148 +1,134 @@
-# GemTemplate
+# Recording Studio Admin
 
-Internal template for building Rails engine addons on top of RecordingStudio.
+Recording Studio Admin is a small Rails engine addon for `RecordingStudio`.
 
-## What's Included
+It adds one root recordable type, `RecordingStudioAdmin::Admin`, plus a minimal mounted admin page that hands off root-level user management to `RecordingStudioAccessible`.
 
-- **RecordingStudio** gem installed and configured
-- **Devise** authentication with a pre-seeded admin user
-- **Workspace**, **Folder**, and **Page** recordables seeded into the dummy host app
-- **FlatPack** UI component library for all views
-- **Dummy app** (`test/dummy/`) with a FlatPack-based sign-in screen, a simple home page, mounted RecordingStudio routes, and FlatPack's built-in rounded theme enabled by default
+## Public API
 
-The dummy app ships with a starter sidebar documentation shell for authenticated pages. The menu entries in `test/dummy/app/views/layouts/flat_pack/_sidebar.html.erb` and the linked docs pages are intended to be rewritten to suit the addon you are building; the template provides the structure and styling, not final product copy. By default, that starter shell uses FlatPack's built-in rounded theme via the root layout attribute rather than custom Tailwind theme recreation.
+- Product/module: `RecordingStudioAdmin`
+- Gem: `recording_studio_admin`
+- Engine: `RecordingStudioAdmin::Engine`
+- Root recordable: `RecordingStudioAdmin::Admin`
 
-## Quick Start
+## What the gem does
 
-### GitHub Codespaces (Recommended)
+- registers `RecordingStudioAdmin::Admin` as a RecordingStudio recordable type
+- provides a lightweight `recording_studio_admin_admins` table
+- validates `name` and supports an optional `key`
+- mounts a FlatPack-based admin page
+- links the current root to the standard `RecordingStudioAccessible` access-management UI
+- stays compatible with `RecordingStudioRootSwitchable` when the host app exposes a current root
 
-1. Click **Code** → **Codespaces** → **Create codespace**
-2. Wait for setup to complete
-3. Run:
-   ```bash
-   cd test/dummy
-   bin/rails db:setup
-   bin/dev
-   ```
-4. Open port 3000 — you'll land on the dummy app home page and can sign in at `/users/sign_in`
+## Non-goals
 
-The dummy app is intended as a host-app validation surface for authentication, FlatPack rendering, Tailwind source scanning, and RecordingStudio route wiring.
+- no capability framework
+- no `AdminCapability` model
+- no registration abstraction
+- no separate authorization system beyond the existing RecordingStudio access stack
 
-### Login Credentials
+## Installation
 
-| Field    | Value             |
-|----------|-------------------|
-| Email    | admin@admin.com   |
-| Password | Password          |
-
-The login form is prefilled with these credentials for fast access.
-
-### Useful Routes
-
-- `/` — dummy app home page
-- `/users/sign_in` — Devise sign-in page
-- `/recording_studio` — redirect to `/` while the mounted RecordingStudio engine remains data/API-focused
-- `/docs/install` — install guide rendered inside the dummy app
-- `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` — starter sidebar pages to customize for your gem
-
-The home page in `test/dummy/app/views/home/index.html.erb` is also a deliberate starting point. Keep it focused on a minimal demo of the gem's primary behavior; use the sidebar pages for deeper explanations and supporting reference material.
-
-## Architecture
-
-### Root Recording Pattern
-
-This template follows RecordingStudio's root recording pattern:
-
-- **Workspace** is the top-level recordable
-- **Folder** and **Page** demonstrate nested recordables under the workspace root
-- A root `RecordingStudio::Recording` wraps the Workspace
-- The admin user has root-level admin access via `RecordingStudio::Access`
-- `Current.actor` is set from `current_user` (Devise) in `ApplicationController`
-
-### Extending RecordingStudio
-
-To add new recordable types:
-
-1. Create your model (e.g., `Page`, `Comment`)
-2. Register it in `config/initializers/recording_studio.rb`:
-   ```ruby
-   RecordingStudio.configure do |config|
-     config.recordable_types = ["Workspace", "YourNewType"]
-   end
-   ```
-3. Leave optional behavior off by default, then opt into capabilities on the specific recordable models that need them:
-   ```ruby
-   class YourNewType < ApplicationRecord
-     include RecordingStudio::Capabilities::Movable.to("Workspace")
-     include RecordingStudio::Capabilities::Copyable.to("Workspace")
-   end
-   ```
-4. If you want per-device root persistence, wire it explicitly in your controller layer:
-   ```ruby
-   class ApplicationController < ActionController::Base
-     include RecordingStudio::Concerns::DeviceSessionConcern
-   end
-   ```
-5. Create recordings under the root:
-   ```ruby
-   root_recording.record(YourNewType) do |record|
-     record.title = "Example"
-   end
-   ```
-
-### Capabilities
-
-This template uses the current RecordingStudio approach: built-in capabilities are off by default and are enabled per recordable type by including the relevant module on the model.
-
-- `movable`
-- `copyable`
-
-Device session persistence is separate from capabilities. It is enabled only when you include `RecordingStudio::Concerns::DeviceSessionConcern` in your controller layer.
-
-Enable behavior intentionally where it belongs:
+Add the gem to your host app:
 
 ```ruby
-class RecordingStudioPage < ApplicationRecord
-  include RecordingStudio::Capabilities::Movable.to("Workspace")
-  include RecordingStudio::Capabilities::Copyable.to("Workspace")
-end
+gem "recording_studio"
+gem "recording_studio_admin"
+```
 
+Then run:
+
+```bash
+bundle install
+bin/rails generate recording_studio_admin:install
+bin/rails generate recording_studio_admin:migrations
+bin/rails db:migrate
+```
+
+The install generator:
+
+- mounts the engine (default: `/admin`)
+- creates `config/initializers/recording_studio_admin.rb`
+- adds Tailwind `@source` entries for the engine views and FlatPack components
+- relies on the gem's bundled `flat_pack`, `importmap-rails`, and `tailwindcss-rails` runtime dependencies for the mounted admin UI
+
+## Host app setup
+
+Set the current actor in your controller layer:
+
+```ruby
 class ApplicationController < ActionController::Base
-  include RecordingStudio::Concerns::DeviceSessionConcern
+  before_action :authenticate_user!
+  before_action { Current.actor = current_user }
 end
 ```
 
-### FlatPack UI Components
+If your app also uses `RecordingStudioRootSwitchable`, expose the current root in the controller layer:
 
-All views use FlatPack ViewComponents. Available components include:
+```ruby
+class ApplicationController < ActionController::Base
+  include RecordingStudio::RootSwitchable::ControllerSupport
+end
+```
 
-- `FlatPack::Button::Component` — Buttons (`:primary`, `:secondary`, `:ghost`)
-- `FlatPack::Card::Component` — Cards (`:default`, `:elevated`, `:outlined`)
-- `FlatPack::Alert::Component` — Alerts (`:success`, `:error`, `:warning`, `:info`)
-- `FlatPack::Badge::Component` — Status badges
-- `FlatPack::Table::Component` — Data tables
-- `FlatPack::TextInput::Component`, `EmailInput`, `PasswordInput` — Form inputs
-- `FlatPack::Breadcrumb::Component` — Navigation breadcrumbs
-- `FlatPack::Navbar::Component` — Navigation sidebar
+Mount `RecordingStudioAccessible` so the admin page can authorize access by role and link to the shared root-level access UI:
 
-Use the live FlatPack demo app at [flatpack-c6p8f.ondigitalocean.app](https://flatpack-c6p8f.ondigitalocean.app/) as the approved UI reference for current shared patterns. Its component table is the fastest way to discover available FlatPack components before introducing new custom UI, and user-provided FlatPack demo URLs should be treated as task context.
+```ruby
+mount RecordingStudioAccessible::Engine, at: "/recording_studio_accessible"
+mount RecordingStudioAdmin::Engine, at: "/admin"
+```
 
-In GitHub Codespaces or other restricted environments, you may need to enable access to that URL before the agent can inspect the app. If access is unavailable, provide sanitized screenshots, copied markup, or component details so the agent can stay aligned with the shared UI.
+`RecordingStudioRootSwitchable` remains optional. When it is mounted and your controller exposes `current_root_recording`, the admin page will keep its root-switch link in sync with the configured switcher scopes.
 
-See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full documentation.
+## Model
 
-## Tech Stack
+```ruby
+admin = RecordingStudioAdmin::Admin.create!(
+  name: "Admin",
+  key: "admin"
+)
 
-| Component       | Version |
-|-----------------|---------|
-| Ruby            | 3.3+    |
-| Rails           | 8.1+    |
-| PostgreSQL      | 16      |
-| TailwindCSS     | 4       |
-| RecordingStudio | v0.1.0-alpha (pinned in `test/dummy/Gemfile`) |
-| FlatPack        | v0.1.33 (pinned in `test/dummy/Gemfile`) |
-| Devise          | latest  |
+root_recording = RecordingStudio::Recording.create!(recordable: admin)
+```
+
+`name` is required. `key` is optional and normalized to lowercase.
+
+## Dummy app
+
+The dummy app in `test/dummy/` is the source of truth for integration behavior.
+
+It demonstrates:
+
+- one admin root
+- one standard workspace root
+- an admin user with access to both
+- a standard host layout for `/`
+- a dedicated admin layout for `/admin`
+- top nav root switching through `RecordingStudioRootSwitchable`
+
+Login:
+
+- Email: `admin@admin.com`
+- Password: `Password`
+
+## Validation
+
+From the repository root:
+
+```bash
+bundle exec rake test
+bundle exec rake test:dummy
+```
+
+If dummy app migrations or dependencies change, also validate the dummy app setup path:
+
+```bash
+cd test/dummy
+bundle install
+bin/rails db:prepare
+```
 
 ## Documentation
 
-The original gem template documentation is preserved in `docs/gem_template/` as architectural reference material. Use it as background on the engine conventions; the README and dummy app are the source of truth for the Recording Studio addon workflow.
+Legacy template notes remain in `docs/gem_template/` for reference only.
+The README and dummy app are the current source of truth.
