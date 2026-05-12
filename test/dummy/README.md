@@ -22,10 +22,12 @@ bin/dev
 
 Run the commands above from the dummy app directory, not the repository root.
 
-Then open the app and sign in with:
+Then open the app and sign in with one of these seeded accounts:
 
-- Email: `admin@admin.com`
-- Password: `Password`
+- `admin@admin.com` / `Password` - admin on the admin root and the workspace root
+- `editor@admin.com` / `Password` - edit access on the admin root only
+- `viewer@admin.com` / `Password` - view access on the admin root only
+- `workspace-admin@admin.com` / `Password` - admin on the workspace root only
 
 ## Useful Routes
 
