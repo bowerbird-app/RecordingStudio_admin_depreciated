@@ -55,8 +55,16 @@ class RecordingStudioAdminTest < Minitest::Test
   def test_dummy_top_nav_mentions_root_switcher
     top_nav_source = File.read(File.expand_path("dummy/app/views/layouts/flat_pack/_top_nav.html.erb", __dir__))
 
-    assert_includes top_nav_source, "Switch root"
+    assert_includes top_nav_source, "Exit #{current_root_name}"
     assert_includes top_nav_source, "current_root_name"
+  end
+
+  def test_dummy_stimulus_boot_registers_flatpack_icons_before_bulk_loading
+    controllers_index_source = File.read(File.expand_path("dummy/app/javascript/controllers/index.js", __dir__))
+
+    assert_includes controllers_index_source, 'import IconController from "controllers/flat_pack/icon_controller"'
+    assert_includes controllers_index_source, 'application.register("flat-pack--icon", IconController)'
+    assert_includes controllers_index_source, 'eagerLoadControllersFrom("controllers/flat_pack", application)'
   end
 
   def test_dummy_readme_describes_admin_and_workspace_roots

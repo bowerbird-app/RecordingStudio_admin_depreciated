@@ -15,7 +15,7 @@ module DummyAccessibleForbiddenPage
       controller: self
     )
 
-    render "recording_studio_accessible/recording_accesses/forbidden", status: :forbidden
+    redirect_to main_app.root_path, alert: "You are not allowed to manage access for this root."
   end
 end
 
