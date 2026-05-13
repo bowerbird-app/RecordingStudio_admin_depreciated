@@ -54,7 +54,7 @@
 
           <% if current_root_recording.present? %>
             <%= link_to recording_studio_accessible.recording_accesses_path(current_root_recording), class: "inline-flex" do %>
-              <%= render FlatPack::Button::Component.new(text: "Manage users", style: :secondary, size: :md) %>
+              <%= render FlatPack::Button::Component.new(text: "Manage users", style: :primary, size: :md) %>
             <% end %>
           <% end %>
         </div>

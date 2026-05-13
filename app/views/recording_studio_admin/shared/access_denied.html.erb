@@ -39,13 +39,13 @@
       <div class="flex flex-wrap gap-3">
         <% if recording_studio_admin_root_switcher_path.present? %>
           <%= link_to recording_studio_admin_root_switcher_path, class: "inline-flex" do %>
-            <%= render FlatPack::Button::Component.new(text: "Switch root", style: :primary, size: :md) %>
+            <%= render FlatPack::Button::Component.new(text: recording_studio_admin_exit_root_label, style: :primary, size: :md) %>
           <% end %>
         <% end %>
 
         <% if recording_studio_admin_admin_users_path.present? && recording_studio_admin_admin_users_allowed? %>
           <%= link_to recording_studio_admin_admin_users_path, class: "inline-flex" do %>
-            <%= render FlatPack::Button::Component.new(text: "Manage users", style: :secondary, size: :md) %>
+            <%= render FlatPack::Button::Component.new(text: "Manage users", style: :primary, size: :md) %>
           <% end %>
         <% end %>
       </div>

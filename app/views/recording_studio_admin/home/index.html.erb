@@ -1,10 +1,4 @@
 <div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Admin",
-    subtitle: "A minimal admin root for RecordingStudio hosts.",
-    variant: :h1
-  ) %>
-
   <div class="flex flex-wrap gap-2">
     <%= render FlatPack::Badge::Component.new(text: "Mounted", style: :success, size: :sm) %>
     <%= render FlatPack::Badge::Component.new(
@@ -72,7 +66,7 @@
             <%= link_to recording_studio_admin_admin_users_path, class: "inline-flex" do %>
               <%= render FlatPack::Button::Component.new(
                 text: "Admin users",
-                style: :secondary,
+                style: :primary,
                 size: :md
               ) %>
             <% end %>
@@ -81,8 +75,8 @@
           <% if recording_studio_admin_root_switcher_path.present? %>
             <%= link_to recording_studio_admin_root_switcher_path, class: "inline-flex" do %>
               <%= render FlatPack::Button::Component.new(
-                text: "Switch root",
-                style: :secondary,
+                text: recording_studio_admin_exit_root_label,
+                style: :primary,
                 size: :md
               ) %>
             <% end %>

@@ -49,7 +49,7 @@
             scope: "all_roots",
             return_to: request.fullpath
           ), class: "inline-flex" do %>
-            <%= render FlatPack::Button::Component.new(text: "Switch root", style: :secondary, size: :md) %>
+            <%= render FlatPack::Button::Component.new(text: "Exit #{@recording.recordable.name}", style: :primary, size: :md) %>
           <% end %>
         </div>
       <% end %>

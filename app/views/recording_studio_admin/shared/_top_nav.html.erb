@@ -22,8 +22,8 @@
     <% if recording_studio_admin_root_switcher_path.present? %>
       <%= link_to recording_studio_admin_root_switcher_path, class: "inline-flex" do %>
         <%= render FlatPack::Button::Component.new(
-          text: "Switch root",
-          style: :secondary,
+          text: recording_studio_admin_exit_root_label,
+          style: :primary,
           size: :sm
         ) %>
       <% end %>

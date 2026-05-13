@@ -29,12 +29,27 @@ class RecordingStudioAdminTest < Minitest::Test
       File.expand_path("../app/views/layouts/recording_studio_admin/application.html.erb", __dir__)
     )
     view_source = File.read(File.expand_path("../app/views/recording_studio_admin/home/index.html.erb", __dir__))
+    pages_source = File.read(File.expand_path("../app/views/recording_studio_admin/pages/index.html.erb", __dir__))
+    access_denied_source = File.read(
+      File.expand_path("../app/views/recording_studio_admin/shared/access_denied.html.erb", __dir__)
+    )
+    top_nav_source = File.read(File.expand_path("../app/views/recording_studio_admin/shared/_top_nav.html.erb", __dir__))
 
     assert_includes layout_source, "FlatPack::SidebarLayout::Component"
+    refute_includes layout_source, 'data-theme='
+    assert_includes layout_source, 'stylesheet_link_tag "tailwind"'
+    assert_includes layout_source, "javascript_importmap_tags"
     assert_includes view_source, "FlatPack::PageTitle::Component"
     assert_includes view_source, "FlatPack::Card::Component"
     assert_includes view_source, "FlatPack::Badge::Component"
     assert_includes view_source, 'text: "Admin users"'
+    assert_includes view_source, "style: :primary"
+    assert_includes view_source, "recording_studio_admin_exit_root_label"
+    assert_includes pages_source, "style: :primary"
+    assert_includes access_denied_source, "recording_studio_admin_exit_root_label"
+    assert_includes access_denied_source, "style: :primary"
+    assert_includes top_nav_source, "recording_studio_admin_exit_root_label"
+    assert_includes top_nav_source, "style: :primary"
   end
 
   def test_dummy_top_nav_mentions_root_switcher

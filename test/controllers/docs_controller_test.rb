@@ -88,6 +88,7 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
     get "/admin"
 
     assert_response :success
+    assert_includes response.body, 'data-theme="rounded"'
     assert_select "title", text: "Recording Studio Admin"
     assert_select "body"
     assert_includes response.body, "RS"
@@ -146,6 +147,7 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
     get "/recording_studio_accessible/recordings/#{@admin_root_recording.id}/accesses"
 
     assert_response :forbidden
+    assert_includes response.body, 'data-theme="rounded"'
     assert_includes response.body, "Access management is unavailable"
     assert_includes response.body, "You need admin access on this root to manage users."
     assert_includes response.body, "viewer@example.com"
@@ -160,6 +162,17 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "/recording_studio_root_switchable/v1/root_switch"
     assert_includes response.body, "scope=all_roots"
     assert_includes response.body, "/admin/?scope=all_roots"
+  end
+
+  test "root switcher page uses the rounded dummy layout" do
+    get "/recording_studio_root_switchable/v1/root_switch", params: {
+      scope: "all_roots",
+      return_to: "/"
+    }
+
+    assert_response :success
+    assert_includes response.body, 'data-theme="rounded"'
+    assert_includes response.body, "Change"
   end
 
   test "mounted admin page emits canonical admin scope links" do

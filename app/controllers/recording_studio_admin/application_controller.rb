@@ -12,6 +12,7 @@ module RecordingStudioAdmin
                    :recording_studio_admin_current_scope,
                    :recording_studio_admin_home_path,
                    :recording_studio_admin_current_root_name,
+                   :recording_studio_admin_exit_root_label,
                    :recording_studio_admin_current_role,
                    :recording_studio_admin_admin_users_path,
                    :recording_studio_admin_admin_users_allowed?,
@@ -55,6 +56,13 @@ module RecordingStudioAdmin
       else
         recordable.to_s
       end
+    end
+
+    def recording_studio_admin_exit_root_label
+      current_root_name = recording_studio_admin_current_root_name
+      return "Exit current root" if current_root_name == "No current root"
+
+      "Exit #{current_root_name}"
     end
 
     def recording_studio_admin_home_path
