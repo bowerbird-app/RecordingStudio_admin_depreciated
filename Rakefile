@@ -69,7 +69,7 @@ end
 def isolated_dummy_test_command
   env_args = isolated_dummy_env.map { |key, value| "#{key}=#{value}" }
 
-  ["env", "-i", *env_args, "bundle", "exec", "ruby", "-I#{ROOT_TEST_PATH}", DUMMY_TEST_FILE]
+  ["env", "-i", *env_args, "bin/rails", "test", DUMMY_TEST_FILE]
 end
 
 def isolated_dummy_install_command
