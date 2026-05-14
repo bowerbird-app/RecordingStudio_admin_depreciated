@@ -153,6 +153,22 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
     assert_includes response.body, ">Tree<"
   end
 
+  test "dummy config page renders setup steps and code snippets" do
+    get config_path
+
+    assert_response :success
+    assert_includes response.body, "Configuration guide"
+    assert_includes response.body, "Gemfile"
+    assert_includes response.body, "app/controllers/application_controller.rb"
+    assert_includes response.body, "config/routes.rb"
+    assert_includes response.body, "config/initializers/recording_studio_accessible.rb"
+    assert_includes response.body, "recording_studio_admin"
+    assert_includes response.body, "before_action { Current.actor = current_user }"
+    assert_includes response.body, "mount RecordingStudioAdmin::Engine"
+    assert_includes response.body, "config.access_management_current_actor_resolver"
+    assert_includes response.body, ">Config<"
+  end
+
   test "accessible access management redirects unauthorized users home with an alert" do
     sign_in @viewer
 

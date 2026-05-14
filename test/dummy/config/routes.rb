@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   devise_for :users
 
   get "/admin/pages", to: "admin_pages#index", as: :admin_pages
+  get "/config", to: "configs#index", as: :config
   get "/tree", to: "trees#index", as: :tree
 
   mount RecordingStudio::Engine, at: "/recording_studio"
