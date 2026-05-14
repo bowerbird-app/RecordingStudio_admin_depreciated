@@ -16,10 +16,18 @@
   <% end %>
 
   <% nav.center do %>
-    <span aria-hidden="true"></span>
+    <span class="text-sm font-medium"><%= current_root_name %></span>
   <% end %>
 
   <% nav.right do %>
+    <%= link_to recording_studio_root_switchable.root_switch_path(scope: "all_roots", return_to: request.fullpath), class: "inline-flex" do %>
+      <%= render FlatPack::Button::Component.new(
+        text: "Exit #{current_root_name}",
+        style: :primary,
+        size: :sm
+      ) %>
+    <% end %>
+
     <% if user_signed_in? %>
       <%= render FlatPack::Avatar::Component.new(
         name: current_user.try(:name).presence || current_user.email,

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html class="h-full overflow-hidden overscroll-none">
+  <head>
+    <title><%= content_for(:title) || "Recording Studio Admin" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Recording Studio Admin">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "flat_pack/variables", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "flat_pack/application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="m-0 h-full overflow-hidden overscroll-none bg-(--surface-page-background-color) text-(--surface-content-color)">
+    <%= render FlatPack::SidebarLayout::Component.new(side: :left, storage_key: "recording-studio-admin-layout") do |layout| %>
+      <% layout.sidebar do %>
+        <%= render "recording_studio_admin/shared/sidebar" %>
+      <% end %>
+
+      <% layout.top_nav do %>
+        <%= render "recording_studio_admin/shared/top_nav" %>
+      <% end %>
+
+      <% layout.main do %>
+        <main class="h-full overflow-auto p-6">
+          <%= yield %>
+        </main>
+      <% end %>
+    <% end %>
+  </body>
+</html>

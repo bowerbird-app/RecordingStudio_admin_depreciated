@@ -1,7 +1,9 @@
-// Import and register all your controllers from the importmap via controllers/**/*_controller
 import { application } from "controllers/application"
 import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
-eagerLoadControllersFrom("controllers", application)
+import IconController from "controllers/flat_pack/icon_controller"
 
-// Eager load FlatPack controllers
+application.register("flat-pack--icon", IconController)
+
+// Register icons eagerly so they still render even if another FlatPack
+// controller fails to import later in the bulk load.
 eagerLoadControllersFrom("controllers/flat_pack", application)

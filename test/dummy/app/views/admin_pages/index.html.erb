@@ -1,0 +1,93 @@
+<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Pages",
+    subtitle: "Admin-root pages can require stronger access than the mounted overview.",
+    variant: :h1
+  ) %>
+
+  <div class="flex flex-wrap gap-2">
+    <%= render FlatPack::Badge::Component.new(text: current_root_name, style: :info, size: :sm) %>
+    <%= render FlatPack::Badge::Component.new(text: "#{@current_role} access", style: :warning, size: :sm) %>
+    <%= render FlatPack::Badge::Component.new(text: "Admin root required", style: :success, size: :sm) %>
+  </div>
+
+  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <% card.header do %>
+      <%= render FlatPack::PageTitle::Component.new(
+        title: "Current user access",
+        subtitle: "This screen shows what the current signed-in user can do inside the selected admin root.",
+        variant: :h3,
+        class: "mb-0 pb-0"
+      ) %>
+    <% end %>
+
+    <% card.body do %>
+      <dl class="grid gap-3 text-sm leading-6 sm:grid-cols-[10rem_1fr]">
+        <dt class="font-medium text-[var(--surface-muted-content-color)]">Current user</dt>
+        <dd><%= @current_user_label %></dd>
+
+        <dt class="font-medium text-[var(--surface-muted-content-color)]">Current root</dt>
+        <dd><%= @root_recordable&.class&.name || "Unavailable" %></dd>
+
+        <dt class="font-medium text-[var(--surface-muted-content-color)]">Mounted admin</dt>
+        <dd>Requires access to an admin root. Workspace-only roots should not enter this mounted surface.</dd>
+
+        <dt class="font-medium text-[var(--surface-muted-content-color)]">View access</dt>
+        <dd><%= @access_levels[:view] ? "Yes" : "No" %></dd>
+
+        <dt class="font-medium text-[var(--surface-muted-content-color)]">Edit access</dt>
+        <dd><%= @access_levels[:edit] ? "Yes" : "No" %></dd>
+
+        <dt class="font-medium text-[var(--surface-muted-content-color)]">Admin access</dt>
+        <dd><%= @access_levels[:admin] ? "Yes" : "No" %></dd>
+      </dl>
+
+      <div class="mt-4 flex flex-wrap gap-2">
+        <%= render FlatPack::Badge::Component.new(
+          text: "view #{ @access_levels[:view] ? 'enabled' : 'disabled' }",
+          style: @access_levels[:view] ? :success : :default,
+          size: :sm
+        ) %>
+        <%= render FlatPack::Badge::Component.new(
+          text: "edit #{ @access_levels[:edit] ? 'enabled' : 'disabled' }",
+          style: @access_levels[:edit] ? :warning : :default,
+          size: :sm
+        ) %>
+        <%= render FlatPack::Badge::Component.new(
+          text: "admin #{ @access_levels[:admin] ? 'enabled' : 'disabled' }",
+          style: @access_levels[:admin] ? :info : :default,
+          size: :sm
+        ) %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <% @pages.each do |page| %>
+      <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+        <% card.header do %>
+          <%= render FlatPack::PageTitle::Component.new(
+            title: page[:title],
+            subtitle: page[:description],
+            variant: :h3,
+            class: "mb-0 pb-0"
+          ) %>
+        <% end %>
+
+        <% card.body do %>
+          <%= render FlatPack::Badge::Component.new(
+            text: "#{page[:minimum_role]} or higher",
+            style: page[:minimum_role] == :admin ? :warning : :info,
+            size: :sm
+          ) %>
+        <% end %>
+
+        <% card.footer do %>
+          <%= link_to page[:path], class: "inline-flex" do %>
+            <%= render FlatPack::Button::Component.new(text: page[:title], style: :primary, size: :sm) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

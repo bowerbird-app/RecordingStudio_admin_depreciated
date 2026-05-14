@@ -3,71 +3,72 @@
 require "test_helper"
 
 class ConfigurationTest < Minitest::Test
-  def setup
-    @configuration = GemTemplate::Configuration.new
+  def test_defaults_current_actor_to_current_actor_then_current_user
+    actor = Object.new
+    controller = Struct.new(:current_user).new(:user)
+
+    current_class = Class.new do
+      class << self
+        attr_accessor :actor
+      end
+    end
+    current_class.actor = actor
+
+    with_temporary_constant(:Current, current_class) do
+      assert_equal actor, RecordingStudioAdmin::Configuration.new.current_actor_for(controller: controller)
+    end
   end
 
-  def test_merge_updates_known_attributes
-    @configuration.merge!(api_key: "abc123", timeout: 9, enable_feature_x: true)
+  def test_defaults_current_root_recording_to_controller_method
+    root_recording = Object.new
+    controller = Struct.new(:params) do
+      def current_root_recording
+        :root_recording
+      end
+    end.new({})
 
-    assert_equal "abc123", @configuration.api_key
-    assert_equal 9, @configuration.timeout
-    assert_equal true, @configuration.enable_feature_x
+    assert_equal(
+      :root_recording,
+      RecordingStudioAdmin::Configuration.new.current_root_recording_for(
+        controller: controller,
+        actor: root_recording
+      )
+    )
   end
 
-  def test_merge_ignores_unknown_keys
-    @configuration.merge!(unknown_key: "ignored", timeout: 7)
+  def test_custom_authorizer_is_used
+    configuration = RecordingStudioAdmin::Configuration.new
+    configuration.mounted_page_authorizer = ->(actor:, **) { actor == :allowed }
 
-    refute_respond_to @configuration, :unknown_key
-    assert_equal 7, @configuration.timeout
+    assert configuration.allow_mounted_page?(controller: Object.new, actor: :allowed, root_recording: nil)
+    refute configuration.allow_mounted_page?(controller: Object.new, actor: :blocked, root_recording: nil)
   end
 
-  def test_merge_with_non_enumerable_is_noop
-    original = @configuration.to_h
+  def test_default_authorizer_requires_a_root_recording
+    configuration = RecordingStudioAdmin::Configuration.new
 
-    @configuration.merge!(nil)
-
-    assert_nil @configuration.api_key if original[:api_key].nil?
-    assert_equal original[:api_key], @configuration.api_key unless original[:api_key].nil?
-    assert_equal original[:timeout], @configuration.timeout
-    assert_equal original[:enable_feature_x], @configuration.enable_feature_x
+    refute configuration.allow_mounted_page?(controller: Object.new, actor: :allowed, root_recording: nil)
   end
 
-  def test_initialize_uses_environment_api_key_and_defaults
-    previous_value = ENV.fetch("GEM_TEMPLATE_API_KEY", nil)
-    ENV["GEM_TEMPLATE_API_KEY"] = "env-token"
+  def test_default_root_resolver_ignores_param_without_accessible_integration
+    controller = Struct.new(:params).new({ root_recording_id: "123" })
 
-    configuration = GemTemplate::Configuration.new
+    assert_nil RecordingStudioAdmin::Configuration.new.current_root_recording_for(
+      controller: controller,
+      actor: :allowed
+    )
+  end
 
-    assert_equal "env-token", configuration.api_key
-    assert_equal false, configuration.enable_feature_x
-    assert_equal 5, configuration.timeout
-    assert_instance_of GemTemplate::Hooks, configuration.hooks
+  private
+
+  def with_temporary_constant(name, value)
+    existed = Object.const_defined?(name)
+    original = Object.const_get(name) if existed
+    Object.send(:remove_const, name) if existed
+    Object.const_set(name, value)
+    yield
   ensure
-    ENV["GEM_TEMPLATE_API_KEY"] = previous_value
-  end
-
-  def test_merge_accepts_string_keys
-    @configuration.merge!("api_key" => "string-key", "timeout" => 12)
-
-    assert_equal "string-key", @configuration.api_key
-    assert_equal 12, @configuration.timeout
-  end
-
-  def test_to_h_reports_registered_hook_counts
-    @configuration.hooks.before_initialize { nil }
-    @configuration.hooks.before_initialize { nil }
-    @configuration.hooks.after_service { nil }
-
-    result = @configuration.to_h
-
-    assert_equal 2, result.fetch(:hooks_registered).fetch(:before_initialize)
-    assert_equal 1, result.fetch(:hooks_registered).fetch(:after_service)
-  end
-
-  def test_configure_without_block_is_safe
-    GemTemplate.configure
-
-    assert_kind_of GemTemplate::Configuration, GemTemplate.configuration
+    Object.send(:remove_const, name) if Object.const_defined?(name)
+    Object.const_set(name, original) if existed
   end
 end

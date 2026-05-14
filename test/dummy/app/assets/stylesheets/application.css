@@ -8,3 +8,8 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+.flat-pack-radio,
+.flat-pack-checkbox {
+	accent-color: var(--button-primary-background-color);
+}
