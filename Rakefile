@@ -23,11 +23,10 @@ def dummy_bundle_base_env
   {
     "BUNDLE_APP_CONFIG" => ENV.fetch("BUNDLE_APP_CONFIG", nil),
     "BUNDLE_GEMFILE" => DUMMY_GEMFILE,
-    "BUNDLE_PATH" => ENV.fetch("BUNDLE_PATH", nil),
     "DISABLE_SIMPLECOV" => "true",
     "GEM_HOME" => ENV.fetch("BUNDLER_ORIG_GEM_HOME", ENV.fetch("GEM_HOME", nil)),
     "GEM_PATH" => ENV.fetch("BUNDLER_ORIG_GEM_PATH", nil)
-  }
+  }.compact
 end
 
 def dummy_bundle_cleared_env
@@ -36,10 +35,15 @@ def dummy_bundle_cleared_env
     "BUNDLE_GEMFILE" => DUMMY_GEMFILE,
     "BUNDLE_LOCKFILE" => nil,
     "BUNDLER_SETUP" => nil,
+    "BUNDLER_ORIG_BUNDLE_BIN_PATH" => nil,
+    "BUNDLER_ORIG_BUNDLE_GEMFILE" => nil,
+    "BUNDLER_ORIG_BUNDLE_LOCKFILE" => nil,
+    "BUNDLER_ORIG_BUNDLER_SETUP" => nil,
+    "BUNDLER_ORIG_BUNDLER_VERSION" => nil,
     "BUNDLER_VERSION" => nil,
     "RUBYLIB" => nil,
     "RUBYOPT" => nil
-  }
+  }.compact
 end
 
 Rake::TestTask.new(:test) do |t|
@@ -64,8 +68,22 @@ namespace :test do
     Dir.chdir(DUMMY_APP_ROOT) do
       env = dummy_bundle_env
 
-      run_command!(env, "bin/rails", "db:prepare")
-      run_command!(env, "bundle", "exec", "ruby", "-I#{ROOT_TEST_PATH}", DUMMY_TEST_FILE)
+      run_command!(
+        {},
+        "env",
+        "-i",
+        "PATH=#{ENV.fetch("BUNDLER_ORIG_PATH", ENV.fetch("PATH", ""))}",
+        "GEM_HOME=#{ENV.fetch("BUNDLER_ORIG_GEM_HOME", ENV.fetch("GEM_HOME", ""))}",
+        "GEM_PATH=#{ENV.fetch("BUNDLER_ORIG_GEM_PATH", ENV.fetch("GEM_PATH", ""))}",
+        "BUNDLE_PATH=/workspace/vendor/bundle",
+        "BUNDLE_GEMFILE=#{DUMMY_GEMFILE}",
+        "DISABLE_SIMPLECOV=true",
+        "bundle",
+        "exec",
+        "ruby",
+        "-I#{ROOT_TEST_PATH}",
+        DUMMY_TEST_FILE
+      )
     end
   end
 
