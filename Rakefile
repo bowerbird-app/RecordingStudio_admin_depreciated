@@ -43,7 +43,7 @@ def dummy_bundle_base_env
 end
 
 def dummy_bundle_cleared_env
-  BUNDLER_KEYS_TO_CLEAR.index_with(nil).merge("BUNDLE_GEMFILE" => DUMMY_GEMFILE).compact
+  BUNDLER_KEYS_TO_CLEAR.to_h { |key| [key, nil] }.merge("BUNDLE_GEMFILE" => DUMMY_GEMFILE).compact
 end
 
 def preserved_env_value(key)
