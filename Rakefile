@@ -8,6 +8,19 @@ DUMMY_GEMFILE = File.expand_path("test/dummy/Gemfile", __dir__)
 DUMMY_APP_ROOT = File.expand_path("test/dummy", __dir__)
 ROOT_TEST_EXCLUSIONS = %w[test/controllers/docs_controller_test.rb test/rename_verification_test.rb].freeze
 ROOT_TEST_PATH = File.expand_path("test", __dir__)
+BUNDLER_KEYS_TO_CLEAR = %w[
+  BUNDLE_BIN_PATH
+  BUNDLE_LOCKFILE
+  BUNDLER_SETUP
+  BUNDLER_ORIG_BUNDLE_BIN_PATH
+  BUNDLER_ORIG_BUNDLE_GEMFILE
+  BUNDLER_ORIG_BUNDLE_LOCKFILE
+  BUNDLER_ORIG_BUNDLER_SETUP
+  BUNDLER_ORIG_BUNDLER_VERSION
+  BUNDLER_VERSION
+  RUBYLIB
+  RUBYOPT
+].freeze
 
 def run_command!(env, *command)
   return if system(env, *command)
@@ -30,20 +43,28 @@ def dummy_bundle_base_env
 end
 
 def dummy_bundle_cleared_env
+  BUNDLER_KEYS_TO_CLEAR.index_with(nil).merge("BUNDLE_GEMFILE" => DUMMY_GEMFILE).compact
+end
+
+def preserved_env_value(key)
+  ENV.fetch("BUNDLER_ORIG_#{key}", ENV.fetch(key, ""))
+end
+
+def isolated_dummy_env
   {
-    "BUNDLE_BIN_PATH" => nil,
+    "PATH" => preserved_env_value("PATH"),
+    "GEM_HOME" => preserved_env_value("GEM_HOME"),
+    "GEM_PATH" => preserved_env_value("GEM_PATH"),
+    "BUNDLE_PATH" => "/workspace/vendor/bundle",
     "BUNDLE_GEMFILE" => DUMMY_GEMFILE,
-    "BUNDLE_LOCKFILE" => nil,
-    "BUNDLER_SETUP" => nil,
-    "BUNDLER_ORIG_BUNDLE_BIN_PATH" => nil,
-    "BUNDLER_ORIG_BUNDLE_GEMFILE" => nil,
-    "BUNDLER_ORIG_BUNDLE_LOCKFILE" => nil,
-    "BUNDLER_ORIG_BUNDLER_SETUP" => nil,
-    "BUNDLER_ORIG_BUNDLER_VERSION" => nil,
-    "BUNDLER_VERSION" => nil,
-    "RUBYLIB" => nil,
-    "RUBYOPT" => nil
-  }.compact
+    "DISABLE_SIMPLECOV" => "true"
+  }
+end
+
+def isolated_dummy_test_command
+  env_args = isolated_dummy_env.map { |key, value| "#{key}=#{value}" }
+
+  ["env", "-i", *env_args, "bundle", "exec", "ruby", "-I#{ROOT_TEST_PATH}", DUMMY_TEST_FILE]
 end
 
 Rake::TestTask.new(:test) do |t|
@@ -62,28 +83,13 @@ namespace :test do
   task :rename_verification_verbose do
     ruby "test/rename_verification_test.rb", "--verbose", verbose: true
   end
+end
 
+namespace :test do
   desc "Run dummy app integration tests under the dummy app bundle"
   task :dummy do
     Dir.chdir(DUMMY_APP_ROOT) do
-      env = dummy_bundle_env
-
-      run_command!(
-        {},
-        "env",
-        "-i",
-        "PATH=#{ENV.fetch("BUNDLER_ORIG_PATH", ENV.fetch("PATH", ""))}",
-        "GEM_HOME=#{ENV.fetch("BUNDLER_ORIG_GEM_HOME", ENV.fetch("GEM_HOME", ""))}",
-        "GEM_PATH=#{ENV.fetch("BUNDLER_ORIG_GEM_PATH", ENV.fetch("GEM_PATH", ""))}",
-        "BUNDLE_PATH=/workspace/vendor/bundle",
-        "BUNDLE_GEMFILE=#{DUMMY_GEMFILE}",
-        "DISABLE_SIMPLECOV=true",
-        "bundle",
-        "exec",
-        "ruby",
-        "-I#{ROOT_TEST_PATH}",
-        DUMMY_TEST_FILE
-      )
+      run_command!(dummy_bundle_env, *isolated_dummy_test_command)
     end
   end
 

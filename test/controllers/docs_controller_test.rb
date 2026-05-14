@@ -9,6 +9,7 @@ require "rails/test_help"
 
 class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
+
   self.use_transactional_tests = false
 
   TEST_PASSWORD = "DummyTestPassword!2026"
