@@ -57,7 +57,7 @@ class RecordingStudioAdminTest < Minitest::Test
   def test_dummy_top_nav_mentions_root_switcher
     top_nav_source = File.read(File.expand_path("dummy/app/views/layouts/flat_pack/_top_nav.html.erb", __dir__))
 
-    assert_includes top_nav_source, "Exit #{current_root_name}"
+    assert_includes top_nav_source, 'Exit #{current_root_name}'
     assert_includes top_nav_source, "current_root_name"
   end
 

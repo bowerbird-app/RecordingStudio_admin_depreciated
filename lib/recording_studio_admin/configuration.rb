@@ -48,6 +48,7 @@ module RecordingStudioAdmin
 
     def default_current_root_recording_for(controller:, actor:)
       current_root = current_root_recording_from(controller)
+      return current_root if current_root.present? && !current_root.respond_to?(:recordable)
       return current_root if current_root.present? && RecordingStudioAdmin.admin_root_recording?(current_root)
       return unless accessible_root_lookup_available?(actor)
 

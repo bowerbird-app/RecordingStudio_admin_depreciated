@@ -122,7 +122,7 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
 
     get "/recording_studio_accessible/recordings/#{@admin_root_recording.id}/accesses"
 
-    assert_redirected_to root_path
+    assert_redirected_to "/"
 
     follow_redirect!
 
