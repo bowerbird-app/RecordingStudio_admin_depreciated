@@ -141,6 +141,18 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Visible only to admins who can manage root-level access."
   end
 
+  test "dummy tree page renders accessible roots and their nested structure" do
+    get tree_path
+
+    assert_response :success
+    assert_includes response.body, "Recording tree"
+    assert_includes response.body, "Admin HQ"
+    assert_includes response.body, "Client Workspace"
+    assert_includes response.body, "Access: admin for dummy-test@example.com"
+    assert_includes response.body, "Access: view for viewer@example.com"
+    assert_includes response.body, ">Tree<"
+  end
+
   test "accessible access management redirects unauthorized users home with an alert" do
     sign_in @viewer
 

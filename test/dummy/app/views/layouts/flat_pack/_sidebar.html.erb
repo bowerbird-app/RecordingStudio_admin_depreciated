@@ -20,6 +20,12 @@
         href: recording_studio_admin.root_path(scope: "all_roots"),
         icon: :shield_check
       ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Tree",
+        href: tree_path,
+        icon: :squares_2x2
+      ) %>
     </nav>
   <% end %>
 
