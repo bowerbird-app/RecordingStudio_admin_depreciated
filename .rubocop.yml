@@ -20,6 +20,7 @@ Layout/LineLength:
 Metrics/ClassLength:
   Exclude:
     - 'test/**/*'
+    - 'app/controllers/recording_studio_admin/application_controller.rb'
 
 Metrics/MethodLength:
   Exclude:

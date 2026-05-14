@@ -13,63 +13,11 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
   TEST_PASSWORD = "DummyTestPassword!2026"
 
   setup do
-    if ActiveRecord::Base.connection.data_source_exists?("recording_studio_root_switchable_selections")
-      ActiveRecord::Base.connection.execute("DELETE FROM recording_studio_root_switchable_selections")
-    end
-
-    RecordingStudio::Recording.unscoped.delete_all
-    RecordingStudio::Access.delete_all
-    RecordingStudioAdmin::Admin.delete_all
-    Workspace.delete_all
-    User.delete_all
-
-    @user = User.create!(
-      email: "dummy-test@example.com",
-      password: TEST_PASSWORD,
-      password_confirmation: TEST_PASSWORD
-    )
-
-    @viewer = User.create!(
-      email: "viewer@example.com",
-      password: TEST_PASSWORD,
-      password_confirmation: TEST_PASSWORD
-    )
-
-    @workspace_admin = User.create!(
-      email: "workspace-admin@example.com",
-      password: TEST_PASSWORD,
-      password_confirmation: TEST_PASSWORD
-    )
-
-    @admin_root = RecordingStudioAdmin::Admin.create!(name: "Admin HQ", key: "  HQ  ")
-    @workspace = Workspace.create!(name: "Client Workspace")
-
-    @admin_root_recording = RecordingStudio::Recording.create!(recordable: @admin_root)
-    @workspace_root_recording = RecordingStudio::Recording.create!(recordable: @workspace)
-
-    [@admin_root_recording, @workspace_root_recording].each do |root_recording|
-      access = RecordingStudio::Access.find_or_create_by!(actor: @user, role: :admin)
-      RecordingStudio::Recording.create!(
-        root_recording: root_recording,
-        parent_recording: root_recording,
-        recordable: access
-      )
-    end
-
-    viewer_access = RecordingStudio::Access.find_or_create_by!(actor: @viewer, role: :view)
-    RecordingStudio::Recording.create!(
-      root_recording: @admin_root_recording,
-      parent_recording: @admin_root_recording,
-      recordable: viewer_access
-    )
-
-    workspace_admin_access = RecordingStudio::Access.find_or_create_by!(actor: @workspace_admin, role: :admin)
-    RecordingStudio::Recording.create!(
-      root_recording: @workspace_root_recording,
-      parent_recording: @workspace_root_recording,
-      recordable: workspace_admin_access
-    )
-
+    clear_root_switchable_selections
+    clear_dummy_records
+    create_users
+    create_roots
+    create_access_records
     sign_in @user
   end
 
@@ -230,5 +178,77 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
     assert_equal [@admin_root_recording.id, @workspace_root_recording.id].sort, roots.map(&:id).sort
     assert_includes roots.map { |recording| recording.recordable.class.name }, "RecordingStudioAdmin::Admin"
     assert_includes roots.map { |recording| recording.recordable.class.name }, "Workspace"
+  end
+
+  private
+
+  def clear_root_switchable_selections
+    return unless ActiveRecord::Base.connection.data_source_exists?("recording_studio_root_switchable_selections")
+
+    ActiveRecord::Base.connection.execute("DELETE FROM recording_studio_root_switchable_selections")
+  end
+
+  def clear_dummy_records
+    RecordingStudio::Recording.unscoped.delete_all
+    RecordingStudio::Access.delete_all
+    RecordingStudioAdmin::Admin.delete_all
+    Workspace.delete_all
+    User.delete_all
+  end
+
+  def create_users
+    @user = create_user("dummy-test@example.com")
+    @viewer = create_user("viewer@example.com")
+    @workspace_admin = create_user("workspace-admin@example.com")
+  end
+
+  def create_user(email)
+    User.create!(
+      email: email,
+      password: TEST_PASSWORD,
+      password_confirmation: TEST_PASSWORD
+    )
+  end
+
+  def create_roots
+    @admin_root = RecordingStudioAdmin::Admin.create!(name: "Admin HQ", key: "  HQ  ")
+    @workspace = Workspace.create!(name: "Client Workspace")
+    @admin_root_recording = RecordingStudio::Recording.create!(recordable: @admin_root)
+    @workspace_root_recording = RecordingStudio::Recording.create!(recordable: @workspace)
+  end
+
+  def create_access_records
+    create_root_admin_accesses
+    create_viewer_access
+    create_workspace_admin_access
+  end
+
+  def create_root_admin_accesses
+    [@admin_root_recording, @workspace_root_recording].each do |root_recording|
+      access = RecordingStudio::Access.find_or_create_by!(actor: @user, role: :admin)
+      RecordingStudio::Recording.create!(
+        root_recording: root_recording,
+        parent_recording: root_recording,
+        recordable: access
+      )
+    end
+  end
+
+  def create_viewer_access
+    viewer_access = RecordingStudio::Access.find_or_create_by!(actor: @viewer, role: :view)
+    RecordingStudio::Recording.create!(
+      root_recording: @admin_root_recording,
+      parent_recording: @admin_root_recording,
+      recordable: viewer_access
+    )
+  end
+
+  def create_workspace_admin_access
+    workspace_admin_access = RecordingStudio::Access.find_or_create_by!(actor: @workspace_admin, role: :admin)
+    RecordingStudio::Recording.create!(
+      root_recording: @workspace_root_recording,
+      parent_recording: @workspace_root_recording,
+      recordable: workspace_admin_access
+    )
   end
 end

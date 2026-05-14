@@ -32,8 +32,8 @@ module RecordingStudioAdmin
 
     private
 
-    def call(callable, **kwargs)
-      return callable.call(**kwargs) if callable.respond_to?(:call)
+    def call(callable, **)
+      return callable.call(**) if callable.respond_to?(:call)
 
       callable
     end
@@ -47,29 +47,44 @@ module RecordingStudioAdmin
     end
 
     def default_current_root_recording_for(controller:, actor:)
-      current_root = if controller.respond_to?(:current_root_recording, true)
-        controller.current_root_recording
-      end
-
+      current_root = current_root_recording_from(controller)
       return current_root if current_root.present? && RecordingStudioAdmin.admin_root_recording?(current_root)
+      return unless accessible_root_lookup_available?(actor)
 
-      return if actor.blank? || !defined?(RecordingStudioAccessible)
+      accessible_roots = accessible_root_recordings_for(actor)
+      requested_root = requested_root_recording_from(controller:, accessible_roots: accessible_roots)
+      return requested_root if requested_root.present?
 
-      root_recording_id = controller.params[:root_recording_id].presence
-      if root_recording_id.present?
-        return RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view).find do |recording|
-          recording.id.to_s == root_recording_id.to_s
-        end
-      end
-
-      accessible_roots = RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
-      accessible_roots.find do |recording|
-        RecordingStudioAdmin.admin_root_recording?(recording)
-      end || current_root || accessible_roots.first
+      admin_root_recording_from(accessible_roots) || current_root || accessible_roots.first
     end
 
     def default_allow_mounted_page?(actor:, root_recording:, **)
       RecordingStudioAdmin.authorized_for_role?(actor: actor, root_recording: root_recording, role: :view)
+    end
+
+    def current_root_recording_from(controller)
+      return unless controller.respond_to?(:current_root_recording, true)
+
+      controller.current_root_recording
+    end
+
+    def accessible_root_recordings_for(actor)
+      RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
+    end
+
+    def accessible_root_lookup_available?(actor)
+      actor.present? && defined?(RecordingStudioAccessible)
+    end
+
+    def requested_root_recording_from(controller:, accessible_roots:)
+      root_recording_id = controller.params[:root_recording_id].presence
+      return if root_recording_id.blank?
+
+      accessible_roots.find { |recording| recording.id.to_s == root_recording_id.to_s }
+    end
+
+    def admin_root_recording_from(accessible_roots)
+      accessible_roots.find { |recording| RecordingStudioAdmin.admin_root_recording?(recording) }
     end
   end
 end

@@ -98,7 +98,7 @@ module RecordingStudioAdmin
         [
           '@source "../../vendor/bundle/**/recording_studio_admin/app/views/**/*.erb";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
-            'recording_studio_admin-*/app/views/**/*.erb";'
+          'recording_studio_admin-*/app/views/**/*.erb";'
         ]
       end
 
