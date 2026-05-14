@@ -30,7 +30,7 @@ module RecordingStudioAdmin
     end
 
     def admin_root_recording?(recording)
-      recording&.recordable.is_a?(RecordingStudioAdmin::Admin)
+      recording.respond_to?(:recordable) && recording.recordable.is_a?(RecordingStudioAdmin::Admin)
     end
 
     def authorized_for_role?(actor:, root_recording:, role:)

@@ -1,0 +1,24 @@
+<div class="mx-auto flex w-full max-w-4xl flex-col gap-6 sm:gap-8">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Configuration guide",
+    subtitle: "Host-app checklist for wiring Recording Studio Admin into routes, controllers, initializers, and seed data.",
+    variant: :h1
+  ) %>
+
+  <div class="grid gap-6 sm:gap-8">
+    <% @setup_sections.each do |section| %>
+      <section class="space-y-3 sm:space-y-4">
+        <div class="space-y-2">
+          <h2 class="text-xl font-semibold leading-tight sm:text-2xl"><%= section[:title] %></h2>
+          <p class="text-sm leading-6 text-(--surface-muted-content-color) wrap-break-word">
+            <span class="font-medium text-(--surface-content-color)"><%= section[:file_path] %></span>
+            <span class="mx-1 hidden sm:inline">-</span>
+            <span><%= section[:subtitle] %></span>
+          </p>
+        </div>
+
+        <pre class="w-full max-w-full min-w-0 overflow-x-auto rounded-xl border border-(--surface-border-color) bg-(--surface-canvas-color) p-3 text-xs leading-6 sm:p-4 sm:text-sm"><code class="language-<%= section[:language] %> block w-full min-w-0 whitespace-pre-wrap break-all sm:whitespace-pre sm:break-normal"><%= section[:snippet] %></code></pre>
+      </section>
+    <% end %>
+  </div>
+</div>

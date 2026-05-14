@@ -6,24 +6,30 @@ module RecordingStudioAdmin
 
     layout -> { RecordingStudioAdmin.configuration.layout }
 
-    helper_method :recording_studio_admin_current_actor,
-                   :recording_studio_admin_current_root_recording,
-                   :recording_studio_admin_current_root_recordable,
-                   :recording_studio_admin_current_scope,
-                   :recording_studio_admin_home_path,
-                   :recording_studio_admin_current_root_name,
-                   :recording_studio_admin_exit_root_label,
-                   :recording_studio_admin_current_role,
-                   :recording_studio_admin_admin_users_path,
-                   :recording_studio_admin_admin_users_allowed?,
-                   :recording_studio_admin_pages_path,
-                   :recording_studio_admin_pages_allowed?,
-                   :recording_studio_admin_root_switcher_path
+    helper_method(
+      *%i[
+        recording_studio_admin_current_actor
+        recording_studio_admin_current_root_recording
+        recording_studio_admin_current_root_recordable
+        recording_studio_admin_current_scope
+        recording_studio_admin_home_path
+        recording_studio_admin_current_root_name
+        recording_studio_admin_exit_root_label
+        recording_studio_admin_current_role
+        recording_studio_admin_admin_users_path
+        recording_studio_admin_admin_users_allowed?
+        recording_studio_admin_pages_path
+        recording_studio_admin_pages_allowed?
+        recording_studio_admin_root_switcher_path
+      ]
+    )
 
     before_action :set_recording_studio_admin_context
     before_action :authorize_recording_studio_admin_page!
 
     private
+
+    attr_reader :recording_studio_admin_current_actor, :recording_studio_admin_current_root_recording
 
     def set_recording_studio_admin_context
       @recording_studio_admin_current_actor = RecordingStudioAdmin.current_actor(controller: self)
@@ -31,14 +37,6 @@ module RecordingStudioAdmin
         controller: self,
         actor: @recording_studio_admin_current_actor
       )
-    end
-
-    def recording_studio_admin_current_actor
-      @recording_studio_admin_current_actor
-    end
-
-    def recording_studio_admin_current_root_recording
-      @recording_studio_admin_current_root_recording
     end
 
     def recording_studio_admin_current_root_recordable
@@ -131,18 +129,9 @@ module RecordingStudioAdmin
     end
 
     def authorize_recording_studio_admin_page!
-      return if RecordingStudioAdmin.mounted_page_allowed?(
-        controller: self,
-        actor: recording_studio_admin_current_actor,
-        root_recording: recording_studio_admin_current_root_recording
-      )
+      return if mounted_page_allowed?
 
-      render_access_denied_page(
-        title: "Admin root access required",
-        subtitle: "This mounted admin area only works for accessible admin roots.",
-        message: "Switch to an admin root where you have access, or ask an administrator to grant access to this root.",
-        required_role: :view
-      )
+      render_access_denied_page(**admin_root_access_denied_attributes)
     end
 
     def authorize_recording_studio_admin_role!(role)
@@ -152,12 +141,33 @@ module RecordingStudioAdmin
         role: role
       )
 
-      render_access_denied_page(
+      render_access_denied_page(**higher_access_denied_attributes(role))
+    end
+
+    def mounted_page_allowed?
+      RecordingStudioAdmin.mounted_page_allowed?(
+        controller: self,
+        actor: recording_studio_admin_current_actor,
+        root_recording: recording_studio_admin_current_root_recording
+      )
+    end
+
+    def admin_root_access_denied_attributes
+      {
+        title: "Admin root access required",
+        subtitle: "This mounted admin area only works for accessible admin roots.",
+        message: "Switch to an admin root where you have access, or ask an administrator to grant access to this root.",
+        required_role: :view
+      }
+    end
+
+    def higher_access_denied_attributes(role)
+      {
         title: "Higher access required",
         subtitle: "You can reach the admin root, but this page needs a stronger role.",
         message: "This page requires #{role} access or higher for the current admin root.",
         required_role: role
-      )
+      }
     end
 
     def render_access_denied_page(title:, subtitle:, message:, required_role:)
@@ -170,10 +180,13 @@ module RecordingStudioAdmin
     end
 
     def configured_root_switchable_scope_keys
-      return ["all_roots"] unless defined?(RecordingStudioRootSwitchable) &&
-        RecordingStudioRootSwitchable.respond_to?(:configuration)
+      return ["all_roots"] unless root_switchable_configuration_available?
 
       Array(RecordingStudioRootSwitchable.configuration.scopes&.keys).map(&:to_s).presence || ["all_roots"]
+    end
+
+    def root_switchable_configuration_available?
+      defined?(RecordingStudioRootSwitchable) && RecordingStudioRootSwitchable.respond_to?(:configuration)
     end
   end
 end

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "recording_studio_root_switchable"
+
 RecordingStudioRootSwitchable.configure do |config|
   config.current_actor_resolver = ->(controller:) { Current.actor || controller.current_user }
 

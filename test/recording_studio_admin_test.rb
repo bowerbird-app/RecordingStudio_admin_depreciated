@@ -33,10 +33,12 @@ class RecordingStudioAdminTest < Minitest::Test
     access_denied_source = File.read(
       File.expand_path("../app/views/recording_studio_admin/shared/access_denied.html.erb", __dir__)
     )
-    top_nav_source = File.read(File.expand_path("../app/views/recording_studio_admin/shared/_top_nav.html.erb", __dir__))
+    top_nav_source = File.read(
+      File.expand_path("../app/views/recording_studio_admin/shared/_top_nav.html.erb", __dir__)
+    )
 
     assert_includes layout_source, "FlatPack::SidebarLayout::Component"
-    refute_includes layout_source, 'data-theme='
+    refute_includes layout_source, "data-theme="
     assert_includes layout_source, 'stylesheet_link_tag "tailwind"'
     assert_includes layout_source, "javascript_importmap_tags"
     assert_includes view_source, "FlatPack::PageTitle::Component"
@@ -55,7 +57,7 @@ class RecordingStudioAdminTest < Minitest::Test
   def test_dummy_top_nav_mentions_root_switcher
     top_nav_source = File.read(File.expand_path("dummy/app/views/layouts/flat_pack/_top_nav.html.erb", __dir__))
 
-    assert_includes top_nav_source, "Exit #{current_root_name}"
+    assert_includes top_nav_source, "Exit \#{current_root_name}"
     assert_includes top_nav_source, "current_root_name"
   end
 

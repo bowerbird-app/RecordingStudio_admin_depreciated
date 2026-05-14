@@ -61,10 +61,17 @@ class InstallGeneratorTest < Minitest::Test
       end
 
       css = File.read(css_path)
+      flat_pack_source =
+        '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
+        'flat_pack-*/app/components/**/*.{rb,erb}";'
+      flatpack_source =
+        '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
+        'flatpack-*/app/components/**/*.{rb,erb}";'
+
       assert_includes css, '@source "../../vendor/bundle/**/recording_studio_admin/app/views/**/*.erb";'
       assert_includes css, '@source "../../vendor/bundle/**/flat_pack/app/components/**/*.{rb,erb}";'
-      assert_includes css, '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flat_pack-*/app/components/**/*.{rb,erb}";'
-      assert_includes css, '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
+      assert_includes css, flat_pack_source
+      assert_includes css, flatpack_source
     end
   end
 
