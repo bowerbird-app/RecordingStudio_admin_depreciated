@@ -72,6 +72,12 @@ def isolated_dummy_test_command
   ["env", "-i", *env_args, "bin/rails", "test", DUMMY_TEST_FILE]
 end
 
+def isolated_dummy_prepare_command
+  env_args = isolated_dummy_env.map { |key, value| "#{key}=#{value}" }
+
+  ["env", "-i", *env_args, "bin/rails", "db:prepare"]
+end
+
 def isolated_dummy_install_command
   env_args = isolated_dummy_env.map { |key, value| "#{key}=#{value}" }
 
@@ -101,6 +107,7 @@ namespace :test do
   task :dummy do
     Dir.chdir(DUMMY_APP_ROOT) do
       run_command!({}, *isolated_dummy_install_command)
+      run_command!({}, *isolated_dummy_prepare_command)
       run_command!({}, *isolated_dummy_test_command)
     end
   end
