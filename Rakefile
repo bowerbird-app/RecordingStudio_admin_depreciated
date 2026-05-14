@@ -92,6 +92,12 @@ def isolated_dummy_prepare_command
   ["env", "-i", *env_args, "bin/rails", "db:prepare"]
 end
 
+def isolated_dummy_tailwind_build_command
+  env_args = isolated_dummy_env.map { |key, value| "#{key}=#{value}" }
+
+  ["env", "-i", *env_args, "bin/rails", "tailwindcss:build"]
+end
+
 def isolated_dummy_install_command
   env_args = isolated_dummy_env.map { |key, value| "#{key}=#{value}" }
 
@@ -122,6 +128,7 @@ namespace :test do
     Dir.chdir(DUMMY_APP_ROOT) do
       run_command!({}, *isolated_dummy_install_command)
       run_command!({}, *isolated_dummy_prepare_command)
+      run_command!({}, *isolated_dummy_tailwind_build_command)
       run_command!({}, *isolated_dummy_test_command)
     end
   end
