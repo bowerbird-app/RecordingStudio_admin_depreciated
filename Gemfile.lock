@@ -333,6 +333,8 @@ PLATFORMS
 DEPENDENCIES
   debug
   devise
+  flat_pack!
+  recording_studio!
   recording_studio_admin!
   puma
   rubocop
