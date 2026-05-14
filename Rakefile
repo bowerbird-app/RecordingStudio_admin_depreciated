@@ -22,6 +22,14 @@ BUNDLER_KEYS_TO_CLEAR = %w[
   RUBYLIB
   RUBYOPT
 ].freeze
+PRESERVED_DUMMY_ENV_KEYS = %w[
+  DATABASE_URL
+  DB_HOST
+  DB_PORT
+  DB_USER
+  DB_PASSWORD
+  DB_NAME
+].freeze
 
 def run_command!(env, *command)
   return if system(env, *command)
@@ -63,7 +71,13 @@ def isolated_dummy_env
     "BUNDLE_PATH" => bundle_path_value,
     "BUNDLE_GEMFILE" => DUMMY_GEMFILE,
     "DISABLE_SIMPLECOV" => "true"
-  }
+  }.merge(preserved_dummy_runtime_env)
+end
+
+def preserved_dummy_runtime_env
+  PRESERVED_DUMMY_ENV_KEYS.to_h do |key|
+    [key, ENV.fetch(key, nil)]
+  end.compact
 end
 
 def isolated_dummy_test_command
