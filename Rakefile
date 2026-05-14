@@ -51,12 +51,16 @@ def preserved_env_value(key)
   ENV.fetch("BUNDLER_ORIG_#{key}", ENV.fetch(key, ""))
 end
 
+def bundle_path_value
+  ENV.fetch("BUNDLE_PATH", ROOT_VENDOR_BUNDLE)
+end
+
 def isolated_dummy_env
   {
     "PATH" => preserved_env_value("PATH"),
     "GEM_HOME" => preserved_env_value("GEM_HOME"),
     "GEM_PATH" => preserved_env_value("GEM_PATH"),
-    "BUNDLE_PATH" => ROOT_VENDOR_BUNDLE,
+    "BUNDLE_PATH" => bundle_path_value,
     "BUNDLE_GEMFILE" => DUMMY_GEMFILE,
     "DISABLE_SIMPLECOV" => "true"
   }
@@ -66,6 +70,12 @@ def isolated_dummy_test_command
   env_args = isolated_dummy_env.map { |key, value| "#{key}=#{value}" }
 
   ["env", "-i", *env_args, "bundle", "exec", "ruby", "-I#{ROOT_TEST_PATH}", DUMMY_TEST_FILE]
+end
+
+def isolated_dummy_install_command
+  env_args = isolated_dummy_env.map { |key, value| "#{key}=#{value}" }
+
+  ["env", "-i", *env_args, "bundle", "install", "--gemfile", DUMMY_GEMFILE]
 end
 
 Rake::TestTask.new(:test) do |t|
@@ -90,7 +100,8 @@ namespace :test do
   desc "Run dummy app integration tests under the dummy app bundle"
   task :dummy do
     Dir.chdir(DUMMY_APP_ROOT) do
-      run_command!(dummy_bundle_env, *isolated_dummy_test_command)
+      run_command!({}, *isolated_dummy_install_command)
+      run_command!({}, *isolated_dummy_test_command)
     end
   end
 
