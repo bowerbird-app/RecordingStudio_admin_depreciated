@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio.git
-  revision: 7667687155bf05ab41b66dfccae330dc3834c39c
+  revision: a2201ac47a6938472a64d17679256dbd7e0247ba
   tag: recording_studio/v3.0.0
   specs:
     recording_studio (3.0.0)
@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_accessible.git
-  revision: 7fb3e8ed73a3f5254cf686dc7111f47236c75711
+  revision: 861f3ab999831edf97314b43ddcb0dcb8abd9a06
   tag: 0.3.1
   specs:
     recording_studio_accessible (0.3.1)
@@ -17,8 +17,8 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_root_switchable.git
-  revision: e684aa3ad73d3239e61cab8013040a3c896d5609
-  branch: main
+  revision: 325881ed4c118f41a2f9e1c1196854e5d1557cc7
+  tag: 0.3.0
   specs:
     recording_studio_root_switchable (0.3.0)
       flat_pack
@@ -28,7 +28,7 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/flatpack.git
-  revision: 8b1a4098b077f3d15d92e58564054cb90680aaf6
+  revision: 43fb089b791faa76fb30557a1a1a682728f9a1e8
   tag: v0.1.84
   specs:
     flat_pack (0.1.84)

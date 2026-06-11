@@ -14,19 +14,13 @@
     ) %>
   <% end %>
 
-  <% nav.center do %>
-    <span class="text-sm font-medium"><%= recording_studio_admin_current_root_name %></span>
-  <% end %>
-
   <% nav.right do %>
-    <% if recording_studio_admin_root_switcher_path.present? %>
-      <%= link_to recording_studio_admin_root_switcher_path, class: "inline-flex" do %>
-        <%= render FlatPack::Button::Component.new(
-          text: recording_studio_admin_exit_root_label,
-          style: :primary,
-          size: :sm
-        ) %>
-      <% end %>
+    <% if respond_to?(:recording_studio_root_switch_dropdown) %>
+      <%= recording_studio_root_switch_dropdown(
+        return_to: request.fullpath,
+        style: :ghost,
+        size: :sm
+      ) %>
     <% end %>
   <% end %>
 <% end %>

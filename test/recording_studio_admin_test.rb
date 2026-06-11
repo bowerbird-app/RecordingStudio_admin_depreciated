@@ -50,15 +50,15 @@ class RecordingStudioAdminTest < Minitest::Test
     assert_includes pages_source, "style: :primary"
     assert_includes access_denied_source, "recording_studio_admin_exit_root_label"
     assert_includes access_denied_source, "style: :primary"
-    assert_includes top_nav_source, "recording_studio_admin_exit_root_label"
-    assert_includes top_nav_source, "style: :primary"
+    assert_includes top_nav_source, "recording_studio_root_switch_dropdown"
+    assert_includes top_nav_source, "style: :ghost"
   end
 
   def test_dummy_top_nav_mentions_root_switcher
     top_nav_source = File.read(File.expand_path("dummy/app/views/layouts/flat_pack/_top_nav.html.erb", __dir__))
 
-    assert_includes top_nav_source, "Exit \#{current_root_name}"
-    assert_includes top_nav_source, "current_root_name"
+    assert_includes top_nav_source, "recording_studio_root_switch_dropdown"
+    refute_includes top_nav_source, 'text: "Exit"'
   end
 
   def test_dummy_stimulus_boot_registers_flatpack_icons_before_bulk_loading
