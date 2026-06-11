@@ -194,6 +194,7 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
   end
 
   def clear_dummy_records
+    RecordingStudio::Event.delete_all if defined?(RecordingStudio::Event)
     RecordingStudio::Recording.unscoped.delete_all
     RecordingStudio::Access.delete_all
     RecordingStudioAdmin::Admin.delete_all
