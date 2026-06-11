@@ -120,7 +120,7 @@ admin = RecordingStudioAdmin::Admin.create!(
   key: "admin"
 )
 
-root_recording = RecordingStudio::Recording.create!(recordable: admin)
+root_recording = RecordingStudio.root_recording_for(admin)
 ```
 
 Model rules:
@@ -139,8 +139,8 @@ On preparation, it:
 
 - checks whether `RecordingStudio` is available
 - adds `RecordingStudioAdmin::Admin` to the configured recordable types when needed
-- checks whether `RecordingStudioAccessible::AllowsAccessibleChildren` exists
-- enables accessible children support for the admin root when available
+- relies on `RecordingStudioAdmin::Admin` declaring `recording_studio_recordable label: "Admin", root: true`
+- enables the `:accessible` capability on the admin root through RecordingStudio 3
 
 This keeps the addon compatible with apps that load Recording Studio, access management, and the admin gem separately.
 

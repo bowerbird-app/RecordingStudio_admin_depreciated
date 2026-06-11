@@ -113,9 +113,12 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "config/routes.rb"
     assert_includes response.body, "config/initializers/recording_studio_accessible.rb"
     assert_includes response.body, "recording_studio_admin"
+    assert_includes response.body, "recording_studio_recordable"
+    assert_includes response.body, "RecordingStudio.enable_capability(:accessible, on: self)"
     assert_includes response.body, "before_action { Current.actor = current_user }"
     assert_includes response.body, "mount RecordingStudioAdmin::Engine"
     assert_includes response.body, "config.access_management_current_actor_resolver"
+    assert_includes response.body, "RecordingStudio.root_recording_for(admin)"
     assert_includes response.body, ">Config<"
   end
 
@@ -191,6 +194,7 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
   end
 
   def clear_dummy_records
+    RecordingStudio::Event.delete_all if defined?(RecordingStudio::Event)
     RecordingStudio::Recording.unscoped.delete_all
     RecordingStudio::Access.delete_all
     RecordingStudioAdmin::Admin.delete_all
@@ -215,8 +219,8 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
   def create_roots
     @admin_root = RecordingStudioAdmin::Admin.create!(name: "Admin HQ", key: "  HQ  ")
     @workspace = Workspace.create!(name: "Client Workspace")
-    @admin_root_recording = RecordingStudio::Recording.create!(recordable: @admin_root)
-    @workspace_root_recording = RecordingStudio::Recording.create!(recordable: @workspace)
+    @admin_root_recording = RecordingStudio.root_recording_for(@admin_root)
+    @workspace_root_recording = RecordingStudio.root_recording_for(@workspace)
   end
 
   def create_access_records
@@ -227,30 +231,51 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
 
   def create_root_admin_accesses
     [@admin_root_recording, @workspace_root_recording].each do |root_recording|
-      access = RecordingStudio::Access.find_or_create_by!(actor: @user, role: :admin)
-      RecordingStudio::Recording.create!(
-        root_recording: root_recording,
-        parent_recording: root_recording,
-        recordable: access
-      )
+      bootstrap_access(actor: @user, role: :admin, parent_recording: root_recording)
     end
   end
 
   def create_viewer_access
-    viewer_access = RecordingStudio::Access.find_or_create_by!(actor: @viewer, role: :view)
-    RecordingStudio::Recording.create!(
-      root_recording: @admin_root_recording,
-      parent_recording: @admin_root_recording,
-      recordable: viewer_access
+    grant_access(
+      actor: @viewer,
+      role: :view,
+      recording: @admin_root_recording,
+      manager_actor: @user
     )
   end
 
   def create_workspace_admin_access
-    workspace_admin_access = RecordingStudio::Access.find_or_create_by!(actor: @workspace_admin, role: :admin)
-    RecordingStudio::Recording.create!(
-      root_recording: @workspace_root_recording,
-      parent_recording: @workspace_root_recording,
-      recordable: workspace_admin_access
+    grant_access(
+      actor: @workspace_admin,
+      role: :admin,
+      recording: @workspace_root_recording,
+      manager_actor: @user
     )
+  end
+
+  def bootstrap_access(actor:, role:, parent_recording:)
+    RecordingStudioAccessible::AccessCreationContext.allow do
+      RecordingStudio.root_recording_or_self(parent_recording).record(
+        RecordingStudio::Access,
+        actor: actor,
+        parent_recording: parent_recording
+      ) do |access|
+        access.actor = actor
+        access.role = role
+      end
+    end
+  end
+
+  def grant_access(actor:, role:, recording:, manager_actor:)
+    result = RecordingStudioAccessible.grant_access(
+      recording: recording,
+      actor: actor,
+      role: role,
+      manager_actor: manager_actor
+    )
+
+    return result if result.success?
+
+    raise Array(result.errors).presence || result.error || "Could not grant #{role} access"
   end
 end

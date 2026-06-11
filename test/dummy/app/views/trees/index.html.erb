@@ -5,29 +5,9 @@
     variant: :h1
   ) %>
 
-  <div class="flex flex-wrap gap-2">
-    <%= render FlatPack::Badge::Component.new(text: current_root_name, style: :info, size: :sm) %>
-    <%= render FlatPack::Badge::Component.new(text: "#{@root_recordings.size} visible roots", style: :success, size: :sm) %>
-  </div>
-
-  <div class="grid gap-6 xl:grid-cols-2">
+  <%= render FlatPack::Tree::Component.new(class: "rounded-xl border border-[var(--surface-border-color)] bg-[var(--surface-canvas-color)] p-3") do |tree| %>
     <% @root_recordings.each do |root_recording| %>
-      <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
-        <% card.header do %>
-          <%= render FlatPack::PageTitle::Component.new(
-            title: recording_label(root_recording),
-            subtitle: root_recording.recordable.class.name,
-            variant: :h3,
-            class: "mb-0 pb-0"
-          ) %>
-        <% end %>
-
-        <% card.body do %>
-          <div class="rounded-xl border border-[var(--surface-border-color)] bg-[var(--surface-canvas-color)] p-4">
-            <%= render partial: "tree_node", locals: { recording: root_recording, depth: 0 } %>
-          </div>
-        <% end %>
-      <% end %>
+      <% build_tree_node(tree, root_recording) %>
     <% end %>
-  </div>
+  <% end %>
 </div>

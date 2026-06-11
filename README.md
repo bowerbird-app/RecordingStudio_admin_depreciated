@@ -40,7 +40,7 @@ It is not a capability framework and it does not introduce a parallel authorizat
 Add the gem to your host application's Gemfile:
 
 ```ruby
-gem "recording_studio"
+gem "recording_studio", "~> 3.0"
 gem "recording_studio_admin"
 ```
 
@@ -54,6 +54,8 @@ bin/rails db:migrate
 ```
 
 The install generator configures the host app to mount the engine, writes the gem initializer, and adds the engine's Tailwind sources so the admin UI can render correctly.
+
+Recording Studio Admin declares `RecordingStudioAdmin::Admin` as a RecordingStudio 3 root recordable and enables the `:accessible` capability for that admin root automatically. If your host app wants direct access management on additional root recordables, declare them with `recording_studio_recordable(...)` and enable `RecordingStudio.enable_capability(:accessible, on: self)` in those model classes.
 
 ## Host App Integration
 
@@ -103,7 +105,7 @@ admin = RecordingStudioAdmin::Admin.create!(
   key: "admin"
 )
 
-root_recording = RecordingStudio::Recording.create!(recordable: admin)
+root_recording = RecordingStudio.root_recording_for(admin)
 ```
 
 Behavior to keep in mind:
@@ -135,6 +137,7 @@ It demonstrates:
 - one standard `Workspace` root
 - `RecordingStudioAccessible` mounted for root-level access management
 - `RecordingStudioRootSwitchable` mounted for current-root switching
+- RecordingStudio 3 recordable declarations and capability enablement for accessible roots
 - separate layouts for the host pages and the mounted admin page
 - a working admin login flow and root-specific navigation
 
@@ -159,6 +162,7 @@ The repository root is the right place for the main validation suite:
 ```bash
 bundle exec rake test
 bundle exec rake test:dummy
+bundle exec rake app:test
 ```
 
 If you change the dummy app setup, migrations, or dependencies, also verify the dummy application boots and prepares correctly:

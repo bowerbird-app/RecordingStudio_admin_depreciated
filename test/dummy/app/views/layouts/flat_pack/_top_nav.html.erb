@@ -15,15 +15,11 @@
 
   <% end %>
 
-  <% nav.center do %>
-    <span class="text-sm font-medium"><%= current_root_name %></span>
-  <% end %>
-
   <% nav.right do %>
-    <%= link_to recording_studio_root_switchable.root_switch_path(scope: "all_roots", return_to: request.fullpath), class: "inline-flex" do %>
-      <%= render FlatPack::Button::Component.new(
-        text: "Exit #{current_root_name}",
-        style: :primary,
+    <% if respond_to?(:recording_studio_root_switch_dropdown) %>
+      <%= recording_studio_root_switch_dropdown(
+        return_to: request.fullpath,
+        style: :ghost,
         size: :sm
       ) %>
     <% end %>
