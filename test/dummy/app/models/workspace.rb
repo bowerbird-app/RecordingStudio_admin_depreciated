@@ -1,8 +1,6 @@
 class Workspace < ApplicationRecord
-  if defined?(RecordingStudioAccessible::AllowsAccessibleChildren)
-    include RecordingStudioAccessible::AllowsAccessibleChildren
-    recording_studio_accessible_children :access
-  end
+  recording_studio_recordable label: "Workspace", root: true
+  RecordingStudio.enable_capability(:accessible, on: self)
 
   validates :name, presence: true
 end

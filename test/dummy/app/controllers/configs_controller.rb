@@ -40,7 +40,19 @@ class ConfigsController < ApplicationController
         RUBY
       },
       {
-        title: "4. Mount the engines in routes",
+        title: "4. Declare host roots that need direct access management",
+        subtitle: "RecordingStudio 3 requires recordable declarations, and RecordingStudioAccessible 0.3.1 expects capability enablement instead of accessible-child wiring.",
+        file_path: "app/models/workspace.rb",
+        language: "ruby",
+        snippet: <<~RUBY
+          class Workspace < ApplicationRecord
+            recording_studio_recordable label: "Workspace", root: true
+            RecordingStudio.enable_capability(:accessible, on: self)
+          end
+        RUBY
+      },
+      {
+        title: "5. Mount the engines in routes",
         subtitle: "The admin UI is mounted at /admin and links into RecordingStudioAccessible for root-level access management.",
         file_path: "config/routes.rb",
         language: "ruby",
@@ -53,7 +65,7 @@ class ConfigsController < ApplicationController
         RUBY
       },
       {
-        title: "5. Configure actor resolution for access management",
+        title: "6. Configure actor resolution for access management",
         subtitle: "This initializer lets RecordingStudioAccessible resolve the signed-in user and display a stable label in the admin flows.",
         file_path: "config/initializers/recording_studio_accessible.rb",
         language: "ruby",
@@ -65,8 +77,8 @@ class ConfigsController < ApplicationController
         RUBY
       },
       {
-        title: "6. Create the admin root",
-        subtitle: "Seed or create a RecordingStudioAdmin::Admin recordable, then wrap it in a root recording so the mounted page has a root to work with.",
+        title: "7. Create the admin root",
+        subtitle: "Seed or create a RecordingStudioAdmin::Admin recordable, then ask RecordingStudio for its declared root recording.",
         file_path: "db/seeds.rb or rails console",
         language: "ruby",
         snippet: <<~RUBY
@@ -75,7 +87,7 @@ class ConfigsController < ApplicationController
             key: "admin"
           )
 
-          root_recording = RecordingStudio::Recording.create!(recordable: admin)
+          root_recording = RecordingStudio.root_recording_for(admin)
         RUBY
       }
     ]

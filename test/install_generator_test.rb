@@ -84,10 +84,11 @@ class InstallGeneratorTest < Minitest::Test
     refute_includes initializer, "current_root_recording_resolver"
   end
 
-  def test_install_guide_mentions_current_actor_and_optional_root_switcher
+  def test_install_guide_mentions_current_actor_capability_setup_and_optional_root_switcher
     install_guide = File.read(INSTALL_TEMPLATE_PATH)
 
     assert_includes install_guide, "Current.actor"
+    assert_includes install_guide, "RecordingStudio.enable_capability(:accessible, on: self)"
     assert_includes install_guide, "RecordingStudioRootSwitchable"
     assert_includes install_guide, "recording_studio_admin:migrations"
   end

@@ -11,14 +11,32 @@ def ensure_user(email)
   end
 end
 
-def ensure_root_access(user:, root_recording:, role:)
-  access = RecordingStudio::Access.find_or_create_by!(actor: user, role: role)
+def bootstrap_access(user:, root_recording:, role:)
+  RecordingStudioAccessible::AccessCreationContext.allow do
+    RecordingStudio.root_recording_or_self(root_recording).record(
+      RecordingStudio::Access,
+      actor: user,
+      parent_recording: root_recording
+    ) do |access|
+      access.actor = user
+      access.role = role
+    end
+  end
+end
 
-  RecordingStudio::Recording.unscoped.find_or_create_by!(
-    root_recording_id: root_recording.id,
-    parent_recording_id: root_recording.id,
-    recordable: access
+def ensure_root_access(user:, root_recording:, role:, manager_actor: nil)
+  return bootstrap_access(user: user, root_recording: root_recording, role: role) if manager_actor.nil?
+
+  result = RecordingStudioAccessible.grant_access(
+    recording: root_recording,
+    actor: user,
+    role: role,
+    manager_actor: manager_actor
   )
+
+  return result if result.success?
+
+  raise Array(result.errors).presence || result.error || "Could not grant #{role} access to #{user.email}"
 end
 
 admin_user = ensure_user("admin@admin.com")
@@ -32,23 +50,21 @@ end
 
 workspace = Workspace.find_or_create_by!(name: "Client Workspace")
 
-admin_root_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
-  recordable: admin_root,
-  parent_recording_id: nil
-)
-
-workspace_root_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
-  recordable: workspace,
-  parent_recording_id: nil
-)
+admin_root_recording = RecordingStudio.root_recording_for(admin_root)
+workspace_root_recording = RecordingStudio.root_recording_for(workspace)
 
 Current.actor = admin_user
 
 ensure_root_access(user: admin_user, root_recording: admin_root_recording, role: :admin)
 ensure_root_access(user: admin_user, root_recording: workspace_root_recording, role: :admin)
-ensure_root_access(user: editor_user, root_recording: admin_root_recording, role: :edit)
-ensure_root_access(user: viewer_user, root_recording: admin_root_recording, role: :view)
-ensure_root_access(user: workspace_admin_user, root_recording: workspace_root_recording, role: :admin)
+ensure_root_access(user: editor_user, root_recording: admin_root_recording, role: :edit, manager_actor: admin_user)
+ensure_root_access(user: viewer_user, root_recording: admin_root_recording, role: :view, manager_actor: admin_user)
+ensure_root_access(
+  user: workspace_admin_user,
+  root_recording: workspace_root_recording,
+  role: :admin,
+  manager_actor: admin_user
+)
 
 puts "Seeded users:"
 puts "- admin@admin.com / #{TEST_PASSWORD} (admin on admin root and workspace root)"

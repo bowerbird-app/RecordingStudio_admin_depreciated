@@ -2,6 +2,9 @@
 
 module RecordingStudioAdmin
   class Admin < ApplicationRecord
+    recording_studio_recordable label: "Admin", root: true
+    RecordingStudio.enable_capability(:accessible, on: self)
+
     validates :name, presence: true
     validates :key, uniqueness: { case_sensitive: false }, allow_nil: true
 

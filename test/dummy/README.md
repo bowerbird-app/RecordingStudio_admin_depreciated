@@ -7,6 +7,7 @@ This Rails app exists to validate Recording Studio Admin in a realistic host app
 - Devise authentication with a seeded admin user
 - one `RecordingStudioAdmin::Admin` root
 - one standard `Workspace` root
+- RecordingStudio 3 declarations with `RecordingStudio.enable_capability(:accessible, on: self)` on accessible roots
 - `RecordingStudioAccessible` mounted for root-level access management
 - `RecordingStudioRootSwitchable` mounted for current-root switching
 - different layouts for the dummy host pages and the mounted admin page
@@ -17,6 +18,7 @@ This Rails app exists to validate Recording Studio Admin in a realistic host app
 cd test/dummy
 bundle install
 bin/rails db:setup
+bin/rails tailwindcss:build
 bin/dev
 ```
 
@@ -41,4 +43,4 @@ Then open the app and sign in with one of these seeded accounts:
 
 ## Why This App Exists
 
-Use this app to verify the addon with the same pieces a host app will use in production: current actor wiring, root switching, mounted admin navigation, and the shared access-management screen.
+Use this app to verify the addon with the same pieces a host app will use in production: current actor wiring, RecordingStudio 3 declarations, capability-enabled root access management, root switching, mounted admin navigation, and the shared access-management screen.
