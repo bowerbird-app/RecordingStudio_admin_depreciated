@@ -7,7 +7,11 @@ DUMMY_TEST_FILE = File.expand_path("test/controllers/docs_controller_test.rb", _
 DUMMY_GEMFILE = File.expand_path("test/dummy/Gemfile", __dir__)
 DUMMY_APP_ROOT = File.expand_path("test/dummy", __dir__)
 ROOT_VENDOR_BUNDLE = File.expand_path("vendor/bundle", __dir__)
-ROOT_TEST_EXCLUSIONS = %w[test/controllers/docs_controller_test.rb test/rename_verification_test.rb].freeze
+ROOT_TEST_EXCLUSIONS = %w[
+  test/controllers/docs_controller_test.rb
+  test/rename_verification_test.rb
+  test/dummy/test/credentials_test.rb
+].freeze
 ROOT_TEST_PATH = File.expand_path("test", __dir__)
 BUNDLER_KEYS_TO_CLEAR = %w[
   BUNDLE_BIN_PATH
@@ -29,6 +33,7 @@ PRESERVED_DUMMY_ENV_KEYS = %w[
   DB_USER
   DB_PASSWORD
   DB_NAME
+  RAILS_MASTER_KEY
 ].freeze
 
 def run_command!(env, *command)
@@ -106,7 +111,7 @@ end
 
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
-  t.test_files = FileList["test/**/*_test.rb"].exclude(*ROOT_TEST_EXCLUSIONS)
+  t.test_files = FileList["test/**/*_test.rb"].exclude(*ROOT_TEST_EXCLUSIONS, "test/dummy/**")
   t.verbose = false
 end
 

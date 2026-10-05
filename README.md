@@ -128,6 +128,8 @@ The page is designed to:
 
 The dummy app in `test/dummy/` is the source of truth for how the gem behaves in a realistic host application.
 
+Dummy credentials (`test/dummy/config/credentials.yml.enc`) are encrypted with the shared RecordingStudio_* development master key. Set `RAILS_MASTER_KEY` or put that key in `test/dummy/config/master.key` (gitignored). Keep the encrypted file; do not generate a per-repo dummy key.
+
 It demonstrates:
 
 - Devise authentication with a seeded admin user
