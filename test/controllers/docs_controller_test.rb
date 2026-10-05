@@ -200,7 +200,6 @@ class RecordingStudioAdminDummyTest < ActionDispatch::IntegrationTest
     ENV["RAILS_MASTER_KEY"].to_s.strip.present? || File.exist?(Rails.root.join("config/master.key"))
   end
 
-
   def clear_root_switchable_selections
     return unless ActiveRecord::Base.connection.data_source_exists?("recording_studio_root_switchable_selections")
 
